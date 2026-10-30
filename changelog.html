@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Version history | Jigsaw Puzzle for Unity</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-toggle" hidden>
+
+<header class="topbar">
+  <label for="nav-toggle" class="nav-button" aria-label="Menu">☰</label>
+  <a class="brand" href="index.html">Jigsaw Puzzle</a>
+  <span class="version">v1.0.0</span>
+</header>
+
+<div class="shell">
+  <nav class="sidebar">
+    <p class="nav-group">Documentation</p>
+    <a href="index.html">Introduction</a>
+    <a href="getting-started.html">Getting started</a>
+    <a href="manual.html">Manual</a>
+
+    <p class="nav-group">Support</p>
+    <a href="faq.html">F.A.Q.</a>
+    <a href="changelog.html" class="current">Version history</a>
+
+    <p class="nav-group">Links</p>
+    <a href="demo/index.html">Playable demo</a>
+    <a href="mailto:corn4bit@gmail.com">corn4bit@gmail.com</a>
+  </nav>
+
+  <main>
+    <article>
+<h1 id="changelog">Changelog</h1>
+<p>All notable changes to this package are documented here.</p>
+<h2 id="100">[1.0.0]</h2>
+<p>First release.</p>
+<h3 id="features">Features</h3>
+<ul>
+<li>Procedural jigsaw cutting from any picture: any resolution, any
+aspect ratio, any grid from 2×2 upwards.</li>
+<li>Levels authored as <code>PuzzleLevel</code> assets and ordered in a
+<code>PuzzleLevelLibrary</code>; no limit on how many a game can
+have.</li>
+<li>Levels can also be built in memory from a texture, so a photo the
+player picked can be played like any other level.</li>
+<li>One editor window for the whole package: setup and scene check,
+level authoring, restyling and support, behind four tabs.</li>
+<li>Level wizard: grid suggestion, live cut preview, automatic texture
+import fixes, batch creation from a folder of images.</li>
+<li>Play any level straight from its inspector, skipping the menu, and
+clear its saved progress from the same place.</li>
+<li>Scene doctor that reports missing components and offers one-click
+fixes.</li>
+<li>Works with the legacy Input Manager and the Input System package,
+without referencing either.</li>
+<li>Per-level saving that remembers where every loose piece is lying,
+with a pluggable storage backend (<code>IPuzzleSaveStore</code>).</li>
+<li>Sequential or fully unlocked level progression.</li>
+<li>Win screen with Next Level and Menu buttons, or an automatic timed
+return.</li>
+<li>One to three stars per level based on solving time, with the fastest
+run kept and shown on the level card. Thresholds per level, or worked
+out from the piece count.</li>
+<li>Solved levels can be played again for a better time: reopening one
+deals a fresh board and leaves the record alone until it is beaten.</li>
+<li>Hint button that ghosts one unplaced piece into its slot, with a
+counter so it can be put behind a rewarded ad.</li>
+<li>Sound effects for picking up, placing and joining pieces, solving a
+level and tapping a button, with volume and mute on one component.</li>
+<li>Re-skinning through one theme asset: elements name the role they
+play and the theme gives that role a colour, including elements you add
+yourself. Two themes included, switchable while the game runs.</li>
+<li>Landscape and portrait layouts from the same prefab, with safe-area
+support. On a tall screen the level grid fills the space under the title
+and the top bar wraps to two rows when it runs out of width.</li>
+<li>Rotating the device or resizing the window mid-level lays the loose
+pieces out again around the board, keeping joined groups together. A
+level saved in one orientation and continued in the other is laid out
+the same way.</li>
+<li>Pieces and joined groups are kept on screen while dragging, and
+positions saved outside it are pulled back in when a level is
+reopened.</li>
+<li>Reward hook via a <code>UnityEvent</code> on the completion popup
+and static events on <code>PuzzleManager</code>.</li>
+<li>Self-contained animation system, so the package has no third-party
+dependencies.</li>
+<li>Assembly definitions for runtime and editor code.</li>
+</ul>
+<h3 id="notes">Notes</h3>
+<ul>
+<li>Requires Unity 6 (6000.0) or newer.</li>
+<li>Works with the Built-in, Universal and High Definition render
+pipelines.</li>
+<li>Bundled third-party content: the font <strong>Fredoka
+SemiBold</strong>, SIL Open Font License 1.1. Its licence ships
+alongside it in <code>Art/Fonts/</code>. Nothing else in the package
+comes from a third party. The sound effects in <code>Audio/</code>, the
+UI art in <code>Art/</code> and the demo pictures in
+<code>Demo/Images/</code> were all made for it, and none of them depicts
+a real product, brand or trademarked design.</li>
+</ul>
+    </article>
+
+    <footer>
+      <p>Jigsaw Puzzle for Unity. Questions and bug reports:
+        <a href="mailto:corn4bit@gmail.com">corn4bit@gmail.com</a>.</p>
+    </footer>
+  </main>
+</div>
+
+</body>
+</html>

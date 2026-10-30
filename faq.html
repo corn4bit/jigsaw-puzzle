@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>F.A.Q. | Jigsaw Puzzle for Unity</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-toggle" hidden>
+
+<header class="topbar">
+  <label for="nav-toggle" class="nav-button" aria-label="Menu">☰</label>
+  <a class="brand" href="index.html">Jigsaw Puzzle</a>
+  <span class="version">v1.0.0</span>
+</header>
+
+<div class="shell">
+  <nav class="sidebar">
+    <p class="nav-group">Documentation</p>
+    <a href="index.html">Introduction</a>
+    <a href="getting-started.html">Getting started</a>
+    <a href="manual.html">Manual</a>
+
+    <p class="nav-group">Support</p>
+    <a href="faq.html" class="current">F.A.Q.</a>
+    <a href="changelog.html">Version history</a>
+
+    <p class="nav-group">Links</p>
+    <a href="demo/index.html">Playable demo</a>
+    <a href="mailto:corn4bit@gmail.com">corn4bit@gmail.com</a>
+  </nav>
+
+  <main>
+    <article>
+<h2 id="faq">FAQ</h2>
+<h3 id="general">General</h3>
+<p><strong>Which Unity versions does it work with?</strong> Unity 6
+(6000.0) and newer, on the Built-in, Universal and High Definition
+render pipelines. The whole minigame is uGUI, so it does not care which
+pipeline your game draws with.</p>
+<p><strong>Does it work on phones?</strong> Yes. Input goes through the
+standard uGUI event system, so a mouse and a finger behave the same. The
+layout follows the canvas in both landscape and portrait, and
+<code>Puzzle Safe Area</code> keeps the HUD clear of notches and rounded
+corners.</p>
+<p><strong>Does it work with the Input System package?</strong> Yes,
+with either backend or both. <code>Puzzle Input Module</code> on the
+demo scene's EventSystem puts the matching UI module in place at
+startup. Dropping the prefab into a scene of your own uses whatever
+EventSystem that scene already has.</p>
+<p><strong>Does it need any other asset or package?</strong> No. No
+DOTween, no TextMeshPro, no third-party serialiser, no Resources folder.
+The animation system is part of the package, and nothing in it
+references anything outside its own folder.</p>
+<p><strong>Can I use it in a game I sell?</strong> Yes, under the
+standard Unity Asset Store EULA. What you may not do is resell or
+redistribute the package itself, re-skinned or not.</p>
+<h3 id="levels-and-pictures">Levels and pictures</h3>
+<p><strong>How many levels can I ship?</strong> As many as you like. The
+library is a plain list and the level select screen scrolls.</p>
+<p><strong>What pictures can I use?</strong> Any resolution and any
+aspect ratio, in any folder of your project. The only import setting
+that matters is Read/Write Enabled, and the Level Wizard sets it for
+you.</p>
+<p><strong>How big can the grid be?</strong> From 2x2 upwards. Past
+about 10x10 the wait grows noticeable: cutting runs one piece per frame,
+and at the default 100 px each piece costs roughly 78 KB of texture
+memory.</p>
+<p><strong>Can the player use a photo of their own?</strong> Yes. Build
+the level in memory and start it:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>PuzzleLevel level <span class="op">=</span> PuzzleLevel<span class="op">.</span><span class="fu">Create</span><span class="op">(</span><span class="st">&quot;My photo&quot;</span><span class="op">,</span> texture<span class="op">,</span> <span class="dv">4</span><span class="op">,</span> <span class="dv">4</span><span class="op">,</span> id<span class="op">:</span> <span class="st">&quot;photo-1&quot;</span><span class="op">);</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>PuzzleManager<span class="op">.</span><span class="fu">Instance</span><span class="op">.</span><span class="fu">StartPuzzle</span><span class="op">(</span>level<span class="op">);</span></span></code></pre></div>
+<p>The texture has to be readable, which one loaded at runtime through
+<code>LoadImage</code> already is. Pass a stable id to have its progress
+remembered, or leave it out for a one-off.</p>
+<h3 id="what-this-package-does-not-do">What this package does not
+do</h3>
+<p>It is a jigsaw minigame, not a finished free-to-play game. It does
+not include:</p>
+<ul>
+<li>A 3D board. Pieces are uGUI images on a canvas.</li>
+<li>Multiplayer, leaderboards or cloud saves. Progress is local, though
+<code>IPuzzleSaveStore</code> is there so you can route it to a backend
+of your own.</li>
+<li>Ads or in-app purchases.</li>
+<li>Lives, energy, coins, boosters or a shop.</li>
+<li>A world-map screen. Level select is a scrolling list of cards.</li>
+<li>An auto-solve button. There is a hint, which shows where one piece
+goes.</li>
+<li>PSD sources. The UI art ships as PNG.</li>
+<li>TextMeshPro labels. Text is uGUI <code>Text</code>, which the Apply
+Font tool restyles in one pass.</li>
+</ul>
+<p>The demo pictures under <code>Demo/</code> are there so the package
+is playable the minute it is imported. Use your own artwork in a game
+you publish, and delete <code>Demo/</code> once you have.</p>
+<h3 id="licensing-and-support">Licensing and support</h3>
+<p><strong>What is bundled that I did not write?</strong> One font,
+Fredoka SemiBold, under the SIL Open Font License. Its licence text sits
+beside it in <code>Art/Fonts/</code> and has to stay with it. Everything
+else was made for this package and carries no further conditions: the
+sound effects, the UI art and the demo pictures. None of the pictures
+depicts a real product or brand, so nothing here follows you into your
+own game as a rights question.</p>
+<p><strong>Where do I ask for help?</strong> <strong><a
+href="mailto:corn4bit@gmail.com">corn4bit@gmail.com</a></strong>. Bug
+reports, questions and feature requests all land in the same place.</p>
+<hr />
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p><strong>"Texture is not readable"</strong>: enable Read/Write in the
+picture's import settings, or press the fix button on the level
+asset.</p>
+<p><strong>The level select screen is empty</strong>: the
+<code>PuzzleManager</code> has no level library assigned, or the library
+has no levels.</p>
+<p><strong>Pieces cannot be dragged</strong>: the scene has no
+<code>EventSystem</code>. The scene check on the Setup tab offers to
+create one.</p>
+<p><strong>Pieces cover my HUD</strong>: assign a
+<code>Scatter Area</code> RectTransform on the board that excludes the
+HUD.</p>
+<p><strong>The picture looks stretched</strong>: the grid proportions do
+not match the picture. Use the wizard's suggested grid.</p>
+<hr />
+<h2 id="support">Support</h2>
+<p>Questions, bugs and feature requests: <strong><a
+href="mailto:corn4bit@gmail.com">corn4bit@gmail.com</a></strong></p>
+    </article>
+
+    <footer>
+      <p>Jigsaw Puzzle for Unity. Questions and bug reports:
+        <a href="mailto:corn4bit@gmail.com">corn4bit@gmail.com</a>.</p>
+    </footer>
+  </main>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual | Jigsaw Puzzle for Unity</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-toggle" hidden>
+
+<header class="topbar">
+  <label for="nav-toggle" class="nav-button" aria-label="Menu">☰</label>
+  <a class="brand" href="index.html">Jigsaw Puzzle</a>
+  <span class="version">v1.0.0</span>
+</header>
+
+<div class="shell">
+  <nav class="sidebar">
+    <p class="nav-group">Documentation</p>
+    <a href="index.html">Introduction</a>
+    <a href="getting-started.html">Getting started</a>
+    <a href="manual.html" class="current">Manual</a>
+
+    <p class="nav-group">Support</p>
+    <a href="faq.html">F.A.Q.</a>
+    <a href="changelog.html">Version history</a>
+
+    <p class="nav-group">Links</p>
+    <a href="demo/index.html">Playable demo</a>
+    <a href="mailto:corn4bit@gmail.com">corn4bit@gmail.com</a>
+  </nav>
+
+  <main>
+    <article>
+<h2 id="hooking-it-into-your-game">Hooking it into your game</h2>
+<h3 id="the-win-screen">The win screen</h3>
+<p><code>Puzzle Completion Popup</code> shows the solved level's name
+and two buttons:</p>
+<ul>
+<li><strong>Next Level</strong> starts the next entry in the library. It
+hides itself after the last level.</li>
+<li><strong>Menu</strong> goes back to level select.</li>
+</ul>
+<p>Both are optional inspector references, and
+<code>PlayNextLevel()</code> / <code>GoToLevelSelection()</code> are
+public, so you can wire your own buttons instead.</p>
+<p><code>Puzzle Manager</code> also has <strong>Auto Return To Level
+Selection</strong>, which sends the player back on a timer with no popup
+interaction. It is off by default because the buttons cover the same
+job; turn it on if you strip the popup down.</p>
+<h3 id="stars-and-records">Stars and records</h3>
+<p>A solved level is rated one to three stars on how long it took, and
+the fastest run is kept. The win screen shows the run just finished; the
+level card shows the best so far.</p>
+<p>Once a level is solved its card shows the record rather than a piece
+count, because opening it again starts a fresh attempt: the pieces are
+scattered, the clock restarts, and the stars, the best time and the tick
+stay as they were. Only a faster run changes them. A level still in
+progress resumes exactly where it was left.</p>
+<p>Each <code>PuzzleLevel</code> has <strong>Three Star Seconds</strong>
+and <strong>Two Star Seconds</strong>. Leave them at 0 and the level
+works them out from its piece count, four seconds a piece for three
+stars and twice that for two, which suits most pictures. Set them by
+hand when a particular level is unusually easy or fiddly.</p>
+<p>Replaying counts: a faster run replaces the record, a slower one
+leaves it alone.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span>   stars <span class="op">=</span> PuzzleManager<span class="op">.</span><span class="fu">Instance</span><span class="op">.</span><span class="fu">GetStars</span><span class="op">(</span>level<span class="op">);</span>      <span class="co">// best so far, 0..3</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">double</span> best <span class="op">=</span> PuzzleManager<span class="op">.</span><span class="fu">Instance</span><span class="op">.</span><span class="fu">GetBestTime</span><span class="op">(</span>level<span class="op">);</span>   <span class="co">// seconds, 0 if never solved</span></span></code></pre></div>
+<p>Inside a completion handler you can also read the run that just
+ended, through <code>LastRunStars</code>, <code>LastRunTime</code> and
+<code>LastRunWasRecord</code>.</p>
+<h3 id="hints">Hints</h3>
+<p>The <strong>Hint</strong> button ghosts one unplaced piece into the
+slot it belongs in and gives the real piece a nudge. It is free and on a
+short cooldown out of the box.</p>
+<p>To charge for it instead, drop the bundled button and call it
+yourself:</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">if</span> <span class="op">(</span>board<span class="op">.</span><span class="fu">HintsUsed</span> <span class="op">&gt;=</span> <span class="dv">3</span><span class="op">)</span> <span class="fu">ShowRewardedAd</span><span class="op">(</span>onWatched<span class="op">:</span> <span class="op">()</span> <span class="op">=&gt;</span> board<span class="op">.</span><span class="fu">ShowHint</span><span class="op">());</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">else</span> board<span class="op">.</span><span class="fu">ShowHint</span><span class="op">();</span></span></code></pre></div>
+<p><code>ShowHint</code> returns false when every piece is already in
+place, so your own button can disable itself rather than appear to do
+nothing.</p>
+<h3 id="rewards">Rewards</h3>
+<p>Select the <strong>Puzzle Completion Popup</strong> component and
+wire its <code>On Level Completed</code> event. It passes the
+<code>PuzzleLevel</code> that was solved, so a single handler can hand
+out the right reward for any level:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">void</span> <span class="fu">OnPuzzleSolved</span><span class="op">(</span>PuzzleLevel level<span class="op">)</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    inventory<span class="op">.</span><span class="fu">Unlock</span><span class="op">(</span>level<span class="op">.</span><span class="fu">LevelId</span><span class="op">);</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>From code, without touching the scene:</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>PuzzleManager<span class="op">.</span><span class="fu">OnPuzzleCompleted</span> <span class="op">+=</span> level <span class="op">=&gt;</span> Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span>$<span class="st">&quot;Solved {level.DisplayName}&quot;</span><span class="op">);</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>PuzzleManager<span class="op">.</span><span class="fu">OnPuzzleStarted</span>   <span class="op">+=</span> level <span class="op">=&gt;</span> Debug<span class="op">.</span><span class="fu">Log</span><span class="op">(</span>$<span class="st">&quot;Started {level.DisplayName}&quot;</span><span class="op">);</span></span></code></pre></div>
+<p>A handler that throws cannot break the game: the popup still appears
+and the error is logged.</p>
+<h3 id="starting-a-level-from-your-own-ui">Starting a level from your
+own UI</h3>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>PuzzleManager<span class="op">.</span><span class="fu">Instance</span><span class="op">.</span><span class="fu">StartPuzzle</span><span class="op">(</span>myLevel<span class="op">);</span>      <span class="co">// by asset</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>PuzzleManager<span class="op">.</span><span class="fu">Instance</span><span class="op">.</span><span class="fu">StartPuzzle</span><span class="op">(</span><span class="st">&quot;a1b2c3d4…&quot;</span><span class="op">);</span>  <span class="co">// by level id</span></span></code></pre></div>
+<p>Either call loads the level's progress and puts the board on screen,
+so you can run the minigame from your own menu, a shop, a save slot or a
+cutscene. You do not need the bundled level select screen at all; delete
+it and the board still works.</p>
+<p>Starting a level from code ignores <strong>Unlock Mode</strong>; it
+is your menu's job to decide what the player may open. Ask
+<code>IsUnlocked</code> first if you want the same rule.</p>
+<h3 id="reading-progress">Reading progress</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span>  done     <span class="op">=</span> PuzzleManager<span class="op">.</span><span class="fu">Instance</span><span class="op">.</span><span class="fu">IsCompleted</span><span class="op">(</span>level<span class="op">);</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span>  unlocked <span class="op">=</span> PuzzleManager<span class="op">.</span><span class="fu">Instance</span><span class="op">.</span><span class="fu">IsUnlocked</span><span class="op">(</span>level<span class="op">);</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">float</span> progress <span class="op">=</span> PuzzleManager<span class="op">.</span><span class="fu">Instance</span><span class="op">.</span><span class="fu">GetProgress</span><span class="op">(</span>level<span class="op">);</span>   <span class="co">// 0..1</span></span></code></pre></div>
+<hr />
+<h2 id="saving">Saving</h2>
+<p>Progress is stored per level and includes where every loose piece is
+lying, so a player can quit halfway through and come back to the same
+board.</p>
+<p>By default it goes to <code>PlayerPrefs</code>. To route it into your
+own save system, implement <code>IPuzzleSaveStore</code> and assign it
+<strong>before the first level starts</strong>:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>PuzzleManager<span class="op">.</span><span class="fu">SaveStore</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">MyCloudSaveStore</span><span class="op">();</span></span></code></pre></div>
+<p>Saves are keyed by the level's generated id, not its file name, so
+renaming a level asset does not lose progress.</p>
+<hr />
+<h2 id="customising">Customising</h2>
+<p>Everything below is on the inspector; none of it needs code.</p>
+<h3 id="board-puzzle-board">Board (<code>Puzzle Board</code>)</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Piece Resolution</code></td>
+<td>Pixel size of one piece. Raise for sharper pieces on large
+screens.</td>
+</tr>
+<tr>
+<td><code>Board Screen Fraction</code></td>
+<td>How much of the screen the assembled picture takes. The rest is
+scatter space.</td>
+</tr>
+<tr>
+<td><code>Max Board Scale</code></td>
+<td>How far a small grid may be blown up to reach that share.</td>
+</tr>
+<tr>
+<td><code>Scatter Area</code></td>
+<td>A RectTransform loose pieces stay inside. Use it to keep pieces off
+your HUD.</td>
+</tr>
+<tr>
+<td><code>Scatter Above And Below</code></td>
+<td>Also scatter above and below the board, not just to the sides.</td>
+</tr>
+<tr>
+<td><code>Relayout On Resize</code></td>
+<td>Lay the loose pieces out again when the screen changes shape
+mid-level, for example when a phone is rotated.</td>
+</tr>
+<tr>
+<td><code>Guide Opacity</code></td>
+<td>Opacity of the faint picture under the board. <code>0</code> hides
+it for a harder game.</td>
+</tr>
+<tr>
+<td><code>Border Color</code></td>
+<td>Frame drawn around the picture. Alpha <code>0</code> gives no
+frame.</td>
+</tr>
+<tr>
+<td><code>Hint Duration</code></td>
+<td>How long a hint stays on the board before fading.</td>
+</tr>
+<tr>
+<td><code>Hint Color</code></td>
+<td>Tint of the ghost piece a hint leaves in the empty slot.</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="pieces-puzzle-piece-dragger-on-the-piece-prefab">Pieces
+(<code>Puzzle Piece Dragger</code>, on the piece prefab)</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Snap Distance</code></td>
+<td>How close two neighbours must be to click together.</td>
+</tr>
+<tr>
+<td><code>Place Tolerance</code></td>
+<td>How close to its slot a piece must be to count as solved.</td>
+</tr>
+<tr>
+<td><code>Drag Scale</code> / <code>Drag Alpha</code></td>
+<td>How a piece looks while it is being dragged.</td>
+</tr>
+<tr>
+<td><code>Drag Edge Margin</code></td>
+<td>Extra inset keeping a dragged piece off the screen edge. Pieces are
+kept on screen either way.</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="sound">Sound</h3>
+<p><code>Puzzle Audio</code> sits on the Puzzle Manager object and plays
+five one-shots: picking a piece up, dropping one into place, two pieces
+clicking together, solving a level and tapping a button. Swap any clip
+for your own, or clear one to silence that event alone. Delete the
+component and the minigame runs silently.</p>
+<p><code>Volume</code> and <code>Muted</code> are public, so a settings
+screen can drive them directly. Every clip goes through one
+<code>AudioSource</code>, so pointing that source at your own mixer
+group routes the whole minigame.</p>
+<p>The bundled effects in <code>Audio/</code> were synthesised for this
+package. They are yours to keep, edit or replace.</p>
+<h3 id="screen-shape">Screen shape</h3>
+<p>The layout follows the canvas rather than a fixed size, so the same
+prefab works in landscape and portrait:</p>
+<ul>
+<li>The level list is a scrolling row on a wide screen and a scrolling
+grid on a tall one. <code>Puzzle Responsive Level List</code> on the
+Scroll View holds the row height and the column count. On a tall screen
+the grid fills the space from under its <code>Header</code> (the title)
+down to <code>Bottom Margin</code>, and
+<code>Fit Columns To Width</code> stretches the cards so the columns
+span the whole list. Clear <code>Header</code> to size the grid as a
+share of the screen instead.</li>
+<li><code>Puzzle Responsive HUD</code> on the top bar moves the timer
+and the piece counter to a second row when they would touch the Back or
+Preview button, which happens on tall phones held upright. Where they
+fit, the bar stays as authored.</li>
+<li>Rotating the device or resizing the window in the middle of a level
+refits the board and moves the loose pieces into the new free space.
+Pieces that are already joined move together, and a piece in the
+player's hand is left alone. The same happens when a level saved on one
+screen shape is reopened on another, for example saved in landscape and
+continued upright. Turn <code>Relayout On Resize</code> off on the board
+to keep pieces where they are.</li>
+<li><code>Puzzle Safe Area</code> keeps the HUD and the menu clear of
+notches and rounded corners. It does nothing on desktop.</li>
+<li><code>Max Board Scale</code> on the board decides how far a small
+grid may be blown up to fill the screen. A 3×3 picture is only 300 units
+wide, which would leave half a phone screen empty at <code>1</code>.
+Raise <code>Piece Resolution</code> if the result looks soft.</li>
+</ul>
+<h3 id="look">Look</h3>
+<p>The level card, the piece and the whole minigame are ordinary prefabs
+under <code>Prefabs/</code>. Restyle them however you like: the scripts
+only need the components they are wired to, and every UI reference is
+optional.</p>
+<p>The backdrop is a single sprite on <code>Content/bg</code>
+(<code>Art/Background.png</code>). Swap the sprite, or drop your own
+game's scene behind the canvas and set the image's alpha to zero.</p>
+<h3 id="themes">Themes</h3>
+<p>The palette lives in one asset. Two ship with the package,
+<code>Midnight</code> and <code>Daylight</code>, under
+<code>Art/Themes/</code>.</p>
+<p>Every element that should follow the palette carries a <strong>Puzzle
+Themed Graphic</strong> naming the part it plays:
+<code>Background</code>, <code>Panel</code>, <code>PanelInset</code>,
+<code>Title</code>, <code>PanelText</code>, <code>Button</code>,
+<code>ButtonLabel</code>, <code>Accent</code>, <code>AccentLabel</code>,
+<code>Star</code> or <code>Progress</code>. The theme decides what
+colour each of those is. Add the component to images and labels of your
+own and they change with the rest.</p>
+<ul>
+<li><strong>To restyle at authoring time</strong>: the
+<strong>Style</strong> tab, pick a theme, press apply. The colours are
+written into the prefabs, so the editor shows the result.</li>
+<li><strong>To switch while the game runs</strong>: assign a theme to
+<strong>Puzzle Manager</strong>, or set
+<code>PuzzleManager.Instance.Theme</code> from a settings screen.
+Everything on screen recolours immediately.</li>
+</ul>
+<p>By default each element keeps its own transparency and takes only the
+colour, which is what lets one <code>Panel</code> colour serve a solid
+card and a faint overlay. Turn off <strong>Keep Alpha</strong> on an
+element whose transparency belongs to the palette instead.</p>
+<p>Two things are deliberately not themed: the level card's title and
+progress text, which sit on top of the player's own picture rather than
+on a themed surface, and a piece, which is the picture. Leave a theme
+unassigned and nothing is recoloured at all.</p>
+<h3 id="fonts">Fonts</h3>
+<p>The package ships with <strong>Fredoka SemiBold</strong>, under the
+SIL Open Font License. Its licence text sits next to it in
+<code>Art/Fonts/</code>. Keep the two together if you redistribute the
+font.</p>
+<p>To use your own instead: the <strong>Style</strong> tab, drop a font
+in and press apply. Every label across the minigame and the level cards
+switches at once: counters, timer, buttons, win popup. The same tab puts
+Unity's built-in font back if you would rather ship no font at all.</p>
+<hr />
+<h2 id="how-the-cutting-works">How the cutting works</h2>
+<ol type="1">
+<li>The picture is rescaled to exactly <code>columns × pieceSize</code>
+by <code>rows × pieceSize</code>. This is why any source resolution and
+aspect ratio works.</li>
+<li>A border is added so the tabs of the outer pieces have room.</li>
+<li>Each piece gets four edges. Edges shared with an already-cut
+neighbour are mirrored so they interlock; the outside of the picture is
+straight; the rest are random, so the same level looks different every
+time it is played.</li>
+<li>Each piece is flood-filled from its centre out to its outline and
+copied from the source pixels.</li>
+</ol>
+<p>All of it runs on the CPU through <code>Color32[]</code>, one piece
+per frame, so a large grid never stalls the game.</p>
+<hr />
+<h2 id="performance-notes">Performance notes</h2>
+<ul>
+<li>Cutting is spread across frames: a 10×10 grid takes about 100 frames
+to appear.</li>
+<li>Piece textures are <code>pieceResolution + 2 × border</code> square,
+RGBA32. At the default 100 px that is roughly 78 KB per piece.</li>
+<li>Every runtime texture and sprite is destroyed when the level
+unloads.</li>
+<li>Saves are batched and written at most once per second, never per
+drag frame.</li>
+</ul>
+<hr />
+<h2 id="package-layout">Package layout</h2>
+<pre><code>Corn4Bit/JigsawPuzzle/
+├── Runtime/          Game code (assembly: Corn4Bit.JigsawPuzzle)
+│   ├── Core/         Levels, progress, save system
+│   ├── Generation/   Picture rescaling and piece cutting
+│   ├── UI/           Board, pieces, HUD, level select
+│   ├── Theming/      Theme asset and the tag component
+│   └── Tweening/     Built-in animation system
+├── Editor/           Level wizard, font tool, inspectors, scene doctor
+├── Prefabs/          The minigame, a level card, a piece
+├── Art/              UI sprites, themes and the bundled font
+├── Audio/            Sound effects
+├── Demo/             Demo scene, levels and images
+└── Documentation/    This file</code></pre>
+<p>Nothing lives outside this folder, and the package references nothing
+outside it. Every sprite, sound, the font and all code live inside it,
+and it pulls in no other package. Delete <code>Demo/</code> once you
+have your own levels.</p>
+<hr />
+    </article>
+
+    <footer>
+      <p>Jigsaw Puzzle for Unity. Questions and bug reports:
+        <a href="mailto:corn4bit@gmail.com">corn4bit@gmail.com</a>.</p>
+    </footer>
+  </main>
+</div>
+
+</body>
+</html>

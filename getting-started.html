@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting started | Jigsaw Puzzle for Unity</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-toggle" hidden>
+
+<header class="topbar">
+  <label for="nav-toggle" class="nav-button" aria-label="Menu">☰</label>
+  <a class="brand" href="index.html">Jigsaw Puzzle</a>
+  <span class="version">v1.0.0</span>
+</header>
+
+<div class="shell">
+  <nav class="sidebar">
+    <p class="nav-group">Documentation</p>
+    <a href="index.html">Introduction</a>
+    <a href="getting-started.html" class="current">Getting started</a>
+    <a href="manual.html">Manual</a>
+
+    <p class="nav-group">Support</p>
+    <a href="faq.html">F.A.Q.</a>
+    <a href="changelog.html">Version history</a>
+
+    <p class="nav-group">Links</p>
+    <a href="demo/index.html">Playable demo</a>
+    <a href="mailto:corn4bit@gmail.com">corn4bit@gmail.com</a>
+  </nav>
+
+  <main>
+    <article>
+<h2 id="quick-start">Quick start</h2>
+<p>Everything lives in one window: <strong>Tools ▸ Corn4Bit ▸ Jigsaw
+Puzzle</strong>. It opens by itself the first time the package is
+imported, and has four tabs.</p>
+<ol type="1">
+<li>On <strong>Setup</strong>, press <strong>Open demo scene</strong>
+and hit Play to see the minigame running.</li>
+<li>In your own scene, press <strong>Add the puzzle to the current
+scene</strong>.</li>
+<li>Go to <strong>Levels</strong> and create your first level from a
+picture of your own.</li>
+</ol>
+<p>The scene check on the Setup tab tells you if anything is missing,
+and its Testing shortcuts reset saved progress while you iterate.</p>
+<hr />
+<h2 id="adding-levels">Adding levels</h2>
+<p>This is the part the whole package is built around. A level is a
+single <code>PuzzleLevel</code> asset holding a picture and a grid.</p>
+<h3 id="with-the-wizard-recommended">With the wizard (recommended)</h3>
+<p><strong>Tools ▸ Corn4Bit ▸ Jigsaw Puzzle</strong>, then the
+<strong>Levels</strong> tab.</p>
+<ol type="1">
+<li>Drop in a picture.</li>
+<li>Pick the number of columns and rows. The wizard suggests a grid that
+matches the picture's proportions and previews exactly how it will be
+cut.</li>
+<li>Press <strong>Create level</strong>.</li>
+</ol>
+<p>The wizard also fixes the texture import settings and registers the
+level in your library, which are the two steps that are easy to
+forget.</p>
+<p>Tick <strong>Create several levels at once</strong> to drop in a
+whole folder of images and get one level per picture.</p>
+<h3 id="by-hand">By hand</h3>
+<ol type="1">
+<li><strong>Assets ▸ Create ▸ Corn4Bit ▸ Jigsaw Puzzle ▸ Puzzle
+Level</strong></li>
+<li>Assign the picture and set columns/rows.</li>
+<li>Enable <strong>Read/Write</strong> in the picture's import
+settings.</li>
+<li>Add the level to your <code>Puzzle Level Library</code> asset.</li>
+</ol>
+<h3 id="ordering-and-unlocking">Ordering and unlocking</h3>
+<p>Order in the library is the order shown on the level select screen.
+The library's <strong>Unlock Mode</strong> decides access:</p>
+<ul>
+<li><code>All Unlocked</code>: every level is playable immediately.</li>
+<li><code>Sequential</code>: a level unlocks when the previous one in
+the list is solved.</li>
+</ul>
+<p>There is no cap on the number of levels.</p>
+<hr />
+    </article>
+
+    <footer>
+      <p>Jigsaw Puzzle for Unity. Questions and bug reports:
+        <a href="mailto:corn4bit@gmail.com">corn4bit@gmail.com</a>.</p>
+    </footer>
+  </main>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no, shrink-to-fit=yes">
+<title>Jigsaw Puzzle</title>
+<style>
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #1b1f2e;
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #cfd4e4;
+  }
+
+  /* The canvas fills the window and the game's own canvas scaler handles the
+     rest, which is also the point of the demo: the layout follows the screen. */
+  #unity-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: #1b1f2e;
+  }
+
+  #unity-loading {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    background: #1b1f2e;
+    z-index: 5;
+  }
+
+  #unity-loading h1 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #f2f4fb;
+  }
+
+  #unity-bar {
+    width: min(260px, 60vw);
+    height: 6px;
+    border-radius: 4px;
+    background: #2b3145;
+    overflow: hidden;
+  }
+
+  #unity-bar-fill {
+    width: 0%;
+    height: 100%;
+    background: #99d15c;
+    transition: width 0.15s ease-out;
+  }
+
+  #unity-hint { font-size: 12.5px; color: #767f9c; }
+
+  #unity-fullscreen {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #e8ebf5;
+    font-size: 15px;
+    cursor: pointer;
+    z-index: 4;
+  }
+
+  #unity-fullscreen:hover { background: rgba(255, 255, 255, 0.22); }
+
+  #unity-warning {
+    position: fixed;
+    left: 50%;
+    top: 12px;
+    transform: translateX(-50%);
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="unity-canvas" tabindex="-1"></canvas>
+
+<div id="unity-loading">
+  <h1>Jigsaw Puzzle</h1>
+  <div id="unity-bar"><div id="unity-bar-fill"></div></div>
+  <p id="unity-hint">Loading</p>
+</div>
+
+<button id="unity-fullscreen" type="button" title="Fullscreen">⛶</button>
+<div id="unity-warning"></div>
+
+<script>
+  var canvas = document.querySelector("#unity-canvas");
+  var loading = document.querySelector("#unity-loading");
+  var barFill = document.querySelector("#unity-bar-fill");
+  var hint = document.querySelector("#unity-hint");
+  var warning = document.querySelector("#unity-warning");
+
+  function unityShowBanner(msg, type) {
+    var div = document.createElement("div");
+    div.innerHTML = msg;
+    div.style = type === "error"
+      ? "background:#c4453d;color:#fff;padding:8px 14px;border-radius:6px"
+      : "background:#e0b83a;color:#000;padding:8px 14px;border-radius:6px";
+    warning.appendChild(div);
+
+    if (type !== "error") setTimeout(function () { warning.removeChild(div); }, 5000);
+  }
+
+  var buildUrl = "Build";
+  var config = {
+    arguments: [],
+    dataUrl: buildUrl + "/WebGL.data.unityweb",
+    frameworkUrl: buildUrl + "/WebGL.framework.js.unityweb",
+    codeUrl: buildUrl + "/WebGL.wasm.unityweb",
+    streamingAssetsUrl: "StreamingAssets",
+    companyName: "Corn4Bit",
+    productName: "Jigsaw Puzzle",
+    productVersion: "1.0",
+    showBanner: unityShowBanner
+  };
+
+  // Phones report a device pixel ratio of 3 or more, and rendering a full screen
+  // canvas at that density costs more than it buys on a 2D board.
+  if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) config.devicePixelRatio = 1;
+
+  var script = document.createElement("script");
+  script.src = buildUrl + "/WebGL.loader.js";
+
+  script.onload = function () {
+    createUnityInstance(canvas, config, function (progress) {
+      barFill.style.width = (100 * progress) + "%";
+      hint.textContent = progress < 1 ? "Loading" : "Starting";
+    }).then(function (instance) {
+      loading.style.display = "none";
+      document.querySelector("#unity-fullscreen").onclick = function () {
+        instance.SetFullscreen(1);
+      };
+    }).catch(function (message) {
+      hint.textContent = message;
+    });
+  };
+
+  document.body.appendChild(script);
+</script>
+
+</body>
+</html>
