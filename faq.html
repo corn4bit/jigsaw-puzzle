@@ -38,7 +38,7 @@
 <h3 id="general">General</h3>
 <p><strong>Which Unity versions does it work with?</strong> Unity 6
 (6000.0) and newer, on the Built-in, Universal and High Definition
-render pipelines. The whole minigame is uGUI, so it does not care which
+render pipelines. The whole game is uGUI, so it does not care which
 pipeline your game draws with.</p>
 <p><strong>Does it work on phones?</strong> Yes. Input goes through the
 standard uGUI event system, so a mouse and a finger behave the same. The
@@ -59,7 +59,8 @@ standard Unity Asset Store EULA. What you may not do is resell or
 redistribute the package itself, re-skinned or not.</p>
 <h3 id="levels-and-pictures">Levels and pictures</h3>
 <p><strong>How many levels can I ship?</strong> As many as you like. The
-library is a plain list and the level select screen scrolls.</p>
+library is a plain list, and the map builds only the nodes on screen, so
+it scrolls just as smoothly with a thousand levels as with ten.</p>
 <p><strong>What pictures can I use?</strong> Any resolution and any
 aspect ratio, in any folder of your project. The only import setting
 that matters is Read/Write Enabled, and the Level Wizard sets it for
@@ -78,16 +79,22 @@ class="sourceCode csharp"><code class="sourceCode cs"><span id="cb1-1"><a href="
 remembered, or leave it out for a one-off.</p>
 <h3 id="what-this-package-does-not-do">What this package does not
 do</h3>
-<p>It is a jigsaw minigame, not a finished free-to-play game. It does
-not include:</p>
+<p>It is a complete jigsaw game with its own meta, but some things need
+a service of your own and are not included:</p>
 <ul>
 <li>A 3D board. Pieces are uGUI images on a canvas.</li>
-<li>Multiplayer, leaderboards or cloud saves. Progress is local, though
+<li>Online multiplayer or cloud saves. The leaderboard ranks the player
+among bots until you plug in a backend through
+<code>IPuzzleLeaderboardProvider</code>, and progress is local, though
 <code>IPuzzleSaveStore</code> is there so you can route it to a backend
 of your own.</li>
-<li>Ads or in-app purchases.</li>
-<li>Lives, energy, coins, boosters or a shop.</li>
-<li>A world-map screen. Level select is a scrolling list of cards.</li>
+<li>A real payment or ad provider. The shop runs on a demo store that
+charges nothing; purchases and rewarded ads go through two small
+interfaces so you can plug in Unity IAP, LevelPlay or anything
+else.</li>
+<li>A painted world map. The demo map has one meadow with scenery shared
+by its chapters; give each zone a picture and scenery of your own for a
+world with distinct places.</li>
 <li>An auto-solve button. There is a hint, which shows where one piece
 goes.</li>
 <li>PSD sources. The UI art ships as PNG.</li>
@@ -98,13 +105,13 @@ Font tool restyles in one pass.</li>
 is playable the minute it is imported. Use your own artwork in a game
 you publish, and delete <code>Demo/</code> once you have.</p>
 <h3 id="licensing-and-support">Licensing and support</h3>
-<p><strong>What is bundled that I did not write?</strong> One font,
-Fredoka SemiBold, under the SIL Open Font License. Its licence text sits
-beside it in <code>Art/Fonts/</code> and has to stay with it. Everything
-else was made for this package and carries no further conditions: the
-sound effects, the UI art and the demo pictures. None of the pictures
-depicts a real product or brand, so nothing here follows you into your
-own game as a rights question.</p>
+<p><strong>What is bundled that I did not write?</strong> Two fonts,
+Lilita One and Fredoka SemiBold, both under the SIL Open Font License.
+Their licence texts sit beside them in <code>Art/Fonts/</code> and have
+to stay with them. Everything else was made for this package and carries
+no further conditions: the sound effects, the UI art and the demo
+pictures. None of the pictures depicts a real product or brand, so
+nothing here follows you into your own game as a rights question.</p>
 <p><strong>Where do I ask for help?</strong> <strong><a
 href="mailto:corn4bit@gmail.com">corn4bit@gmail.com</a></strong>. Bug
 reports, questions and feature requests all land in the same place.</p>

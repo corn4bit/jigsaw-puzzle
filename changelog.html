@@ -37,71 +37,158 @@
 <h1 id="changelog">Changelog</h1>
 <p>All notable changes to this package are documented here.</p>
 <h2 id="100">[1.0.0]</h2>
-<p>First release.</p>
-<h3 id="features">Features</h3>
+<p>First release: a complete jigsaw game with a full casual meta, ready
+to re-skin and ship.</p>
+<h3 id="puzzle">Puzzle</h3>
 <ul>
 <li>Procedural jigsaw cutting from any picture: any resolution, any
-aspect ratio, any grid from 2×2 upwards.</li>
+aspect ratio, any grid from 2×2 upwards. Finished pictures are
+seamless.</li>
 <li>Levels authored as <code>PuzzleLevel</code> assets and ordered in a
-<code>PuzzleLevelLibrary</code>; no limit on how many a game can
-have.</li>
-<li>Levels can also be built in memory from a texture, so a photo the
-player picked can be played like any other level.</li>
-<li>One editor window for the whole package: setup and scene check,
-level authoring, restyling and support, behind four tabs.</li>
-<li>Level wizard: grid suggestion, live cut preview, automatic texture
-import fixes, batch creation from a folder of images.</li>
-<li>Play any level straight from its inspector, skipping the menu, and
-clear its saved progress from the same place.</li>
-<li>Scene doctor that reports missing components and offers one-click
-fixes.</li>
-<li>Works with the legacy Input Manager and the Input System package,
+<code>PuzzleLevelLibrary</code>, with no limit on how many a game can
+have. Levels can also be built in memory from a texture, so a photo the
+player picked plays like any other level.</li>
+<li>Piece tray: a few pieces at a time on a shelf under or beside the
+board, refilled from a queue that favours edges and pieces that fit what
+is already placed, with a reroll button. The classic scatter layout is
+one setting away.</li>
+<li>A dragged piece follows the finger, floats just above it on touch
+screens so it is never hidden under the fingertip, joins its neighbours,
+and is kept on screen.</li>
+<li>One to three stars per level by solving time, with the best time
+kept. Solved levels can be replayed for a better time.</li>
+<li>Hint that rings the most useful piece and its slot in a gold glow
+until the piece is placed, with a gate (<code>CanShowHint</code>) for
+charging for hints.</li>
+<li>Per-level saving that remembers every piece and the tray, through a
+pluggable storage backend (<code>IPuzzleSaveStore</code>).</li>
+<li>Landscape and portrait from the same prefab, with safe-area support.
+Rotating mid-level lays the loose pieces out again, keeping joined
+groups together.</li>
+<li>Streak praise: Good!, Great!, Awesome! and more pop over the board
+with sparks and a chime when pieces land in their slots one after
+another (<code>Puzzle Combo Praise</code>).</li>
+<li>The finished picture stays in full view for a moment before the win
+popup, and the HUD, boosters and tray fade out behind it.</li>
+<li>Sound effects with volume and mute on one component.</li>
+<li>Jelly press feedback on every button, and touch targets of at least
+48 dp on phones.</li>
+</ul>
+<h3 id="level-map">Level map</h3>
+<ul>
+<li>A winding road with one node per level showing its picture, number,
+stars and lock, a ring on the current level and the road coloured up to
+it. Sideways on wide screens, upwards on tall ones; it scrolls to the
+current level on its own.</li>
+<li>Chapters (zones) with their own banner, tint and backdrop picture,
+repeated along the road at their own proportions and reaching under the
+HUD and tab bar. The demo ships a meadow backdrop.</li>
+<li>Only the nodes on screen exist, so a thousand levels scroll as
+smoothly as ten.</li>
+<li>Scenery around the road (<code>Puzzle Map Scenery</code>): groves of
+trees, bushes, flowers, a cottage, a pond and more, placed from a grid
+so the map always looks the same, never on the road, a node or a chapter
+banner, in both orientations. Rays of sun slant down from under the
+leaves of some trees and light warm patches on the grass.</li>
+<li>A living map: a warm sunlit corner, cloud shadows drifting over the
+meadow, butterflies and sparkles (<code>Puzzle Map Ambience</code>), all
+at no cost on long maps.</li>
+<li>Backdrops that tile by themselves can repeat without mirroring
+(<code>Mirror Copies</code>), so side-view art such as trees never
+stands upside down.</li>
+</ul>
+<h3 id="meta-game">Meta game</h3>
+<ul>
+<li>Meta core in its own assembly: currencies and boosters as assets, a
+wallet and an inventory that never go below zero or past a cap, buying
+in one step, static events for every change, and saving through the same
+save store as the levels.</li>
+<li>Menu shell: five tabs (Shop, Ranks, Home, Friends, Profile), along
+the bottom on tall screens and down the side on wide ones, features that
+open at a set level, a top HUD with live currency plaques, a loading
+screen and a settings window.</li>
+<li>Coin rewards for solved levels, by stars and doubled on the first
+clear; coins fly from the win popup into the coin plaque.</li>
+<li>Hint stock that refills one every 20 minutes in real time, with an
+out-of-hints offer.</li>
+<li>Five boosters that work out of the box: Magnet, Frame and Stopwatch
+in the level, Ready Edge and Double Coins on the level start window.
+Each opens at a set level, is introduced by a tapping finger the first
+time, and can be bought on the spot.</li>
+<li>Shop with a special offer, bundles, gem and coin packs and a free
+gift on a timer, set in a catalog asset. Real money goes through
+<code>IPuzzlePurchaseProvider</code>; a demo store that charges nothing
+is included.</li>
+<li>Profile with an editable name, twelve avatars, four frames and the
+player's totals. The avatar picker fits any screen, landscape and
+portrait, and refits when it turns.</li>
+<li>Leaderboard with three boards (stars, time on the current level,
+level reached), medals for the top three and the player's row pinned in
+view. Fifty weekly bots fill it; <code>IPuzzleLeaderboardProvider</code>
+plugs in a real backend.</li>
+<li>Friends with daily gifts both ways, Claim all and invites. Bot
+friends fill it; <code>IPuzzleFriendsProvider</code> and
+<code>IPuzzleShareProvider</code> plug in the real thing.</li>
+<li>Seven-day daily reward and a chest on every chapter banner that
+opens once all of the chapter's stars are earned.</li>
+<li>EditMode tests for the whole meta core.</li>
+</ul>
+<h3 id="look">Look</h3>
+<ul>
+<li><p>Juicy candy art throughout in one berry palette: a violet
+backdrop with sunlight and bokeh, gold-bezelled windows and buttons,
+raspberry window frames with cream insets, a violet board and tab bar,
+objects with real volume and thickness, and original icons, avatars,
+medals and chests. Windows pop in with a small overshoot.</p></li>
+<li><p>Lilita One for headings, buttons and numbers, with a cream face
+gradient and an outline in the colour of whatever the text sits on
+(<code>Puzzle Text Outline</code>); Fredoka SemiBold for running
+text.</p></li>
+<li><p>Re-skinning through one theme asset: elements name the role they
+play and the theme gives that role a colour. Three themes included,
+switchable while the game runs.</p></li>
+<li><p>Screens fit every shape: the landscape shop pairs its sections
+side by side, the Ranks and Friends lists keep to a readable width
+(<code>Puzzle Max Width</code>), the profile card hugs its column on a
+tall screen, the special offer lists everything it gives with icons, and
+the player's pinned rank never covers another row.</p></li>
+<li><p>On a wide screen the win popup moves aside so the finished
+picture stays in view; window titles shrink to fit their ribbon; the
+reward window fits any number of rewards.</p></li>
+<li><p>Runs at 60 frames per second on phones by default
+(<code>Target Frame Rate</code> on the manager); Unity would otherwise
+hold mobile at 30.</p></li>
+<li><p>Documentation: a step by step guide to turning the demo into your
+own game, a table of where every player-facing text lives, and a code
+map of the flow, events and interfaces.</p></li>
+<li><p>Every text the code writes on screen is now a field on its
+component, so all wording can be changed without code. Every public
+method and property carries XML docs.</p></li>
+</ul>
+<h3 id="editor">Editor</h3>
+<ul>
+<li>One window for the whole package (Tools ▸ Corn4Bit ▸ Jigsaw Puzzle):
+setup and scene check, level authoring, restyling and support.</li>
+<li>Level wizard: grid suggestion, live cut preview, automatic import
+fixes, batch creation from a folder of images.</li>
+<li>Play any level straight from its inspector, and clear its saved
+progress there.</li>
+<li>Works with the legacy Input Manager and the Input System package
 without referencing either.</li>
-<li>Per-level saving that remembers where every loose piece is lying,
-with a pluggable storage backend (<code>IPuzzleSaveStore</code>).</li>
-<li>Sequential or fully unlocked level progression.</li>
-<li>Win screen with Next Level and Menu buttons, or an automatic timed
-return.</li>
-<li>One to three stars per level based on solving time, with the fastest
-run kept and shown on the level card. Thresholds per level, or worked
-out from the piece count.</li>
-<li>Solved levels can be played again for a better time: reopening one
-deals a fresh board and leaves the record alone until it is beaten.</li>
-<li>Hint button that ghosts one unplaced piece into its slot, with a
-counter so it can be put behind a rewarded ad.</li>
-<li>Sound effects for picking up, placing and joining pieces, solving a
-level and tapping a button, with volume and mute on one component.</li>
-<li>Re-skinning through one theme asset: elements name the role they
-play and the theme gives that role a colour, including elements you add
-yourself. Two themes included, switchable while the game runs.</li>
-<li>Landscape and portrait layouts from the same prefab, with safe-area
-support. On a tall screen the level grid fills the space under the title
-and the top bar wraps to two rows when it runs out of width.</li>
-<li>Rotating the device or resizing the window mid-level lays the loose
-pieces out again around the board, keeping joined groups together. A
-level saved in one orientation and continued in the other is laid out
-the same way.</li>
-<li>Pieces and joined groups are kept on screen while dragging, and
-positions saved outside it are pulled back in when a level is
-reopened.</li>
-<li>Reward hook via a <code>UnityEvent</code> on the completion popup
-and static events on <code>PuzzleManager</code>.</li>
-<li>Self-contained animation system, so the package has no third-party
-dependencies.</li>
-<li>Assembly definitions for runtime and editor code.</li>
+<li>Self-contained animation system and assembly definitions; no
+third-party dependencies.</li>
 </ul>
 <h3 id="notes">Notes</h3>
 <ul>
 <li>Requires Unity 6 (6000.0) or newer.</li>
 <li>Works with the Built-in, Universal and High Definition render
 pipelines.</li>
-<li>Bundled third-party content: the font <strong>Fredoka
-SemiBold</strong>, SIL Open Font License 1.1. Its licence ships
-alongside it in <code>Art/Fonts/</code>. Nothing else in the package
-comes from a third party. The sound effects in <code>Audio/</code>, the
-UI art in <code>Art/</code> and the demo pictures in
-<code>Demo/Images/</code> were all made for it, and none of them depicts
-a real product, brand or trademarked design.</li>
+<li>Bundled third-party content: the fonts <strong>Lilita One</strong>
+and <strong>Fredoka SemiBold</strong>, both under the SIL Open Font
+License 1.1, with their licences alongside them in
+<code>Art/Fonts/</code>. Everything else (sound effects, UI art, demo
+pictures) was made for this package, and none of it depicts a real
+product, brand or trademarked design.</li>
 </ul>
     </article>
 

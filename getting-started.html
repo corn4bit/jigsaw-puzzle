@@ -40,7 +40,7 @@ Puzzle</strong>. It opens by itself the first time the package is
 imported, and has four tabs.</p>
 <ol type="1">
 <li>On <strong>Setup</strong>, press <strong>Open demo scene</strong>
-and hit Play to see the minigame running.</li>
+and hit Play to see the game running.</li>
 <li>In your own scene, press <strong>Add the puzzle to the current
 scene</strong>.</li>
 <li>Go to <strong>Levels</strong> and create your first level from a
@@ -48,6 +48,55 @@ picture of your own.</li>
 </ol>
 <p>The scene check on the Setup tab tells you if anything is missing,
 and its Testing shortcuts reset saved progress while you iterate.</p>
+<hr />
+<h2 id="make-it-your-own-game">Make it your own game</h2>
+<p>The demo is a finished game; turning it into yours is mostly swapping
+content, not writing code. A typical order, each step pointing to where
+it lives:</p>
+<ol type="1">
+<li><strong>Name and splash.</strong> Product name and icon in Player
+Settings. The splash is the <code>LoadingScreen</code> object in the
+prefab: swap the logo sprite and the title text.</li>
+<li><strong>Pictures.</strong> Drop your pictures on the
+<strong>Levels</strong> tab (batch mode makes a level from each), point
+<code>Puzzle Manager ▸ Level Library</code> at your own library, then
+delete <code>Demo/</code>.</li>
+<li><strong>Colours.</strong> Pick or make a theme on the
+<strong>Style</strong> tab (three are included), or repaint the sprites
+in <code>Art/UI</code>: they are plain PNGs, and the 9-slice borders
+keep working as long as a new picture has the same size.</li>
+<li><strong>Fonts.</strong> The font tool on the <strong>Style</strong>
+tab restyles every label in one pass.</li>
+<li><strong>The map.</strong> Chapter names, ground pictures and tints
+are the zones on <code>Puzzle Level Map</code>; the trees, houses and
+flowers are the <code>Items</code> of <code>Puzzle Map Scenery</code>,
+one sprite each; clouds, butterflies and sparkles are on
+<code>Puzzle Map Ambience</code>.</li>
+<li><strong>Economy.</strong> Everything is an asset in
+<code>Data/Meta</code>: the currencies and the five boosters (name,
+icon, start amount, price), <code>Meta Config</code> (which of them the
+game uses and the level each feature opens at),
+<code>Reward Table</code> (level rewards, the daily week, chapter
+chests) and <code>Avatar Set</code>.</li>
+<li><strong>Shop.</strong> Items, prices, bundles and offers are rows in
+<code>Shop Catalog</code>; real money goes through
+<code>IPuzzlePurchaseProvider</code> (see <a
+href="manual.html#shop">Shop</a>).</li>
+<li><strong>Words.</strong> Every text the player reads is either on a
+<code>Text</code> in the prefab or a field on the component that writes
+it; see <a href="manual.html#texts-and-wording">Texts and
+wording</a>.</li>
+<li><strong>Sounds.</strong> Five clips on <code>Puzzle Audio</code>,
+next to the manager; the praise chime is on
+<code>Puzzle Combo Praise</code> and the coin clink on
+<code>Puzzle Reward Flight</code>.</li>
+<li><strong>Online services.</strong> Leaderboard, friends, sharing, ads
+and saves each plug in through one interface; see <a
+href="manual.html#code-map">Code map</a>.</li>
+</ol>
+<p>None of these steps needs a code change, and none of them touches the
+package's scripts, so later updates of the package do not undo your
+work.</p>
 <hr />
 <h2 id="adding-levels">Adding levels</h2>
 <p>This is the part the whole package is built around. A level is a

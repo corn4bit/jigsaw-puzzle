@@ -46,10 +46,34 @@ hides itself after the last level.</li>
 <p>Both are optional inspector references, and
 <code>PlayNextLevel()</code> / <code>GoToLevelSelection()</code> are
 public, so you can wire your own buttons instead.</p>
+<p>The popup opens over a dimmed screen (<code>WinPanel/Dim</code>),
+with a soft glow behind the panel and a burst of stars flying out from
+behind it. Both are set in the popup's <strong>Celebration</strong>
+section: <code>Panel Body</code> (the background they sit behind),
+<code>Glow Sprite</code> and <code>Glow Color</code>,
+<code>Sparkle Sprite</code> and <code>Sparkle Count</code>. Clear a
+sprite to drop that effect. The board adds a light flash of its own,
+<code>Flash Opacity</code> on <code>Puzzle Board</code>, which
+<code>0</code> turns off.</p>
+<p>The popup waits <code>Admire Delay</code> (1 second) after the last
+piece lands, so the player sees the finished picture whole before it is
+covered. While it is up, everything in <code>Fade While Shown</code> (in
+the demo: the HUD buttons, booster bar, piece tray and reroll) drops to
+<code>Faded Alpha</code> and stops taking taps, so nothing behind it
+looks clickable. On a wide screen, where the board sits on the left, the
+popup moves right so the finished picture stays in view
+(<code>Wide Shift</code>, and down by <code>Wide Drop</code> so the coin
+plaque clears its ribbon). On a tall screen it stays centred.</p>
 <p><code>Puzzle Manager</code> also has <strong>Auto Return To Level
 Selection</strong>, which sends the player back on a timer with no popup
 interaction. It is off by default because the buttons cover the same
 job; turn it on if you strip the popup down.</p>
+<p><strong>Target Frame Rate</strong> on <code>Puzzle Manager</code> (60
+by default) asks for 60 frames per second. Phones otherwise hold a Unity
+game at 30, which makes dragging pieces and scrolling the map feel
+sluggish. Set it to 0 to keep the platform's default, or raise it for
+high refresh screens; it has no effect where V Sync is on in the Quality
+settings.</p>
 <h3 id="stars-and-records">Stars and records</h3>
 <p>A solved level is rated one to three stars on how long it took, and
 the fastest run is kept. The win screen shows the run just finished; the
@@ -73,17 +97,21 @@ class="sourceCode csharp"><code class="sourceCode cs"><span id="cb1-1"><a href="
 ended, through <code>LastRunStars</code>, <code>LastRunTime</code> and
 <code>LastRunWasRecord</code>.</p>
 <h3 id="hints">Hints</h3>
-<p>The <strong>Hint</strong> button ghosts one unplaced piece into the
-slot it belongs in and gives the real piece a nudge. It is free and on a
-short cooldown out of the box.</p>
-<p>To charge for it instead, drop the bundled button and call it
-yourself:</p>
+<p>The <strong>Hint</strong> button picks the piece that helps most (the
+one with the most neighbours already in place, otherwise an edge piece)
+and rings both it and its slot in a soft gold glow that follows the
+piece's outline. The glow stays until the piece is placed or six seconds
+pass (<code>Hint Duration</code>), and pressing the button again while
+it is up costs nothing.</p>
+<p>Hints are free unless something says otherwise. The board asks
+<code>CanShowHint</code> before each new one, so charging for them is
+one line:</p>
 <div class="sourceCode" id="cb2"><pre
-class="sourceCode csharp"><code class="sourceCode cs"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">if</span> <span class="op">(</span>board<span class="op">.</span><span class="fu">HintsUsed</span> <span class="op">&gt;=</span> <span class="dv">3</span><span class="op">)</span> <span class="fu">ShowRewardedAd</span><span class="op">(</span>onWatched<span class="op">:</span> <span class="op">()</span> <span class="op">=&gt;</span> board<span class="op">.</span><span class="fu">ShowHint</span><span class="op">());</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">else</span> board<span class="op">.</span><span class="fu">ShowHint</span><span class="op">();</span></span></code></pre></div>
-<p><code>ShowHint</code> returns false when every piece is already in
-place, so your own button can disable itself rather than appear to do
-nothing.</p>
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>board<span class="op">.</span><span class="fu">CanShowHint</span> <span class="op">=</span> <span class="op">()</span> <span class="op">=&gt;</span> wallet<span class="op">.</span><span class="fu">TrySpend</span><span class="op">(</span>hintCurrency<span class="op">,</span> <span class="dv">1</span><span class="op">);</span></span></code></pre></div>
+<p>With the meta game in the scene, <code>Puzzle Hint Supply</code> on
+the button does exactly that from the player's hint stock (see Hints and
+boosters below). <code>ShowHint</code> returns false when there is
+nothing to hint or the gate refused, so your own button can react.</p>
 <h3 id="rewards">Rewards</h3>
 <p>Select the <strong>Puzzle Completion Popup</strong> component and
 wire its <code>On Level Completed</code> event. It passes the
@@ -106,7 +134,7 @@ own UI</h3>
 class="sourceCode csharp"><code class="sourceCode cs"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>PuzzleManager<span class="op">.</span><span class="fu">Instance</span><span class="op">.</span><span class="fu">StartPuzzle</span><span class="op">(</span>myLevel<span class="op">);</span>      <span class="co">// by asset</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>PuzzleManager<span class="op">.</span><span class="fu">Instance</span><span class="op">.</span><span class="fu">StartPuzzle</span><span class="op">(</span><span class="st">&quot;a1b2c3d4…&quot;</span><span class="op">);</span>  <span class="co">// by level id</span></span></code></pre></div>
 <p>Either call loads the level's progress and puts the board on screen,
-so you can run the minigame from your own menu, a shop, a save slot or a
+so you can run a level from your own menu, a shop, a save slot or a
 cutscene. You do not need the bundled level select screen at all; delete
 it and the board still works.</p>
 <p>Starting a level from code ignores <strong>Unlock Mode</strong>; it
@@ -118,6 +146,413 @@ class="sourceCode csharp"><code class="sourceCode cs"><span id="cb6-1"><a href="
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span>  unlocked <span class="op">=</span> PuzzleManager<span class="op">.</span><span class="fu">Instance</span><span class="op">.</span><span class="fu">IsUnlocked</span><span class="op">(</span>level<span class="op">);</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">float</span> progress <span class="op">=</span> PuzzleManager<span class="op">.</span><span class="fu">Instance</span><span class="op">.</span><span class="fu">GetProgress</span><span class="op">(</span>level<span class="op">);</span>   <span class="co">// 0..1</span></span></code></pre></div>
 <hr />
+<h2 id="meta-game">Meta game</h2>
+<p>Around the puzzle runs a meta game: currencies the player earns and
+spends, and boosters they own. It lives in its own assembly,
+<code>Corn4Bit.JigsawPuzzle.Meta</code>, and only listens to the puzzle,
+so the puzzle code is the same with or without it.</p>
+<p>Everything is data. <code>Data/Meta/Meta Config</code> lists the
+game's currencies and boosters; balancing the economy means editing
+those assets, never code.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>What it holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Puzzle Currency</code></td>
+<td>Id, name, icon, starting amount and an optional cap. The demo has
+Coins (200 to start) and Gems (10).</td>
+</tr>
+<tr>
+<td><code>Puzzle Booster</code></td>
+<td>Id, name, one line of description, icon, whether it is used before
+or during a level, price and starting stock. The demo has Magnet, Frame,
+Stopwatch, Ready Edge and Double Coins, two of each to start.</td>
+</tr>
+<tr>
+<td><code>Puzzle Meta Config</code></td>
+<td>The lists of both, assigned to the <code>Puzzle Meta</code>
+component next to the Puzzle Manager.</td>
+</tr>
+</tbody>
+</table></div>
+<p>From code, through <code>PuzzleMeta.Instance</code>:</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>PuzzleMeta meta <span class="op">=</span> PuzzleMeta<span class="op">.</span><span class="fu">Instance</span><span class="op">;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>PuzzleCurrency coins <span class="op">=</span> meta<span class="op">.</span><span class="fu">Config</span><span class="op">.</span><span class="fu">FindCurrency</span><span class="op">(</span><span class="st">&quot;coins&quot;</span><span class="op">);</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>meta<span class="op">.</span><span class="fu">Wallet</span><span class="op">.</span><span class="fu">Add</span><span class="op">(</span>coins<span class="op">,</span> <span class="dv">50</span><span class="op">,</span> <span class="st">&quot;daily&quot;</span><span class="op">);</span>             <span class="co">// pays, up to the currency&#39;s cap</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> paid <span class="op">=</span> meta<span class="op">.</span><span class="fu">Wallet</span><span class="op">.</span><span class="fu">TrySpend</span><span class="op">(</span>coins<span class="op">,</span> <span class="dv">150</span><span class="op">);</span>     <span class="co">// false and untouched when short</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> bought <span class="op">=</span> meta<span class="op">.</span><span class="fu">Inventory</span><span class="op">.</span><span class="fu">TryBuy</span><span class="op">(</span>meta<span class="op">.</span><span class="fu">Config</span><span class="op">.</span><span class="fu">FindBooster</span><span class="op">(</span><span class="st">&quot;magnet&quot;</span><span class="op">),</span> meta<span class="op">.</span><span class="fu">Wallet</span><span class="op">);</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> used <span class="op">=</span> meta<span class="op">.</span><span class="fu">Inventory</span><span class="op">.</span><span class="fu">TryUse</span><span class="op">(</span>meta<span class="op">.</span><span class="fu">Config</span><span class="op">.</span><span class="fu">FindBooster</span><span class="op">(</span><span class="st">&quot;magnet&quot;</span><span class="op">));</span></span></code></pre></div>
+<p>Balances never go below zero or above their cap, and buying takes the
+money and delivers the booster in one step. Every change raises a static
+event on <code>PuzzleMetaEvents</code> (<code>CurrencyChanged</code>,
+<code>BoosterChanged</code>, with the new amount, the change and a
+reason string), and so does every solved level
+(<code>LevelCompleted</code>). Screens and analytics listen there
+instead of polling.</p>
+<p>The meta progress is saved through the same
+<code>IPuzzleSaveStore</code> as the levels, under the key
+<code>corn4bit.meta</code>, so routing saves to the cloud covers both. A
+new player gets the starting amounts once;
+<code>PuzzleMeta.ResetProgress()</code> starts over.</p>
+<p>A currency or booster added to the config in a later update is handed
+its starting amount on the player's next run, once, so existing players
+do not start it at zero.</p>
+<h3 id="menu-shell">Menu shell</h3>
+<p>The level select screen is one of five tabs: <strong>Shop, Ranks,
+Home, Friends and Profile</strong>, with Home, the level map, in the
+middle.</p>
+<ul>
+<li><strong><code>Puzzle Tab Bar</code></strong> runs along the bottom
+of a tall screen and down the left of a wide one, swapping over when the
+device turns. The selected tab rises onto a blue tile with its name
+under it; the others sit muted. Screens slide sideways when the tab
+changes and are only switched off, never rebuilt, so the map keeps its
+place. Each tab can carry a red badge with a count
+(<code>SetBadge("shop", 3)</code>), and <code>Select(id)</code> opens a
+tab from code. Shop, Ranks, Friends and Profile are placeholder screens
+that later updates fill.</li>
+<li><strong><code>Puzzle Feature Gate</code></strong> opens features as
+the player progresses. The rules live in the meta config's
+<code>Features</code> list: by default Ranks opens at level 5 and
+Friends at level 10. A locked tab wears a padlock, and tapping it shakes
+the icon and says which level opens it. Untick <code>Enabled</code> to
+remove a feature entirely.</li>
+<li><strong><code>Puzzle Top HUD</code></strong> holds the avatar, one
+<code>Puzzle Currency Plaque</code> per currency and the settings
+button. Plaques follow every balance change, roll the number up and
+bounce the icon when it rises, and their plus button opens the shop. On
+a tall phone the avatar steps aside (the Profile tab does the same job)
+and the plaques shrink to fit rather than overlap.</li>
+<li><strong><code>Puzzle Loading Screen</code></strong> covers the menu
+for a moment while the game opens: logo, title and a filling bar, then a
+fade. <code>Minimum Duration</code> sets how long it stays.</li>
+</ul>
+<p>The demo has three currencies on the HUD: Hints (5 to start), Coins
+and Gems.</p>
+<h3 id="level-rewards">Level rewards</h3>
+<p>A solved level pays coins, and the win popup shows them arriving.</p>
+<ul>
+<li><strong><code>Puzzle Reward Table</code></strong>
+(<code>Data/Meta/Reward Table</code>, assigned to the meta config's
+<code>Rewards</code>) sets the pay: by default 10, 20 or 30 coins for a
+one, two or three star run, doubled the first time a level is solved, so
+new levels always pay better than replaying old ones. The currency, the
+three amounts and the multiplier are all fields. Leave
+<code>Rewards</code> empty and levels pay nothing.</li>
+<li><strong><code>Puzzle Reward Flight</code></strong> on the win popup
+plays the payout: the amount counts up in a coin row under the stars, an
+x2 badge stamps on for a first clear, then coins fan out of the row and
+fly into a coin plaque that drops in at the top of the screen. The
+plaque's number rises as each coin lands, with a chime. Closing the
+popup early puts the rest on the plaque at once, so the count is never
+left short. Its <code>Hide While Shown</code> list hides the level's own
+timer and counter, which the plaque would otherwise cover, and brings
+them back afterwards.</li>
+</ul>
+<p>The money is in the wallet before the popup opens; the flight only
+replays the moment. <code>PuzzleMetaEvents.LevelRewarded</code> reports
+each payout with its level, stars, amount and multiplier, and
+<code>PuzzleMeta.Instance.PayForLevel(level, stars, firstClear)</code>
+pays for a level solved somewhere other than the Puzzle Manager.</p>
+<h3 id="hints-and-boosters">Hints and boosters</h3>
+<p><strong>Hint stock.</strong> Hints are a currency
+(<code>Hints</code>, 5 to start) that refills by itself: one every 20
+minutes while the stock is under 5, counted in real time, so hints come
+back while the game is closed too. Purchases and rewards can push it
+past 5; the timer waits until it drops back under. The settings live in
+the meta config: <code>Hint Currency</code>, <code>Regeneration</code>
+(cap and minutes, for any currency, not just hints) and the out-of-hints
+offer (<code>Hint Refill Amount</code>, price and currency: 3 for 150
+coins by default). The hint plaque on the map shows the wait for the
+next one, or Full.</p>
+<p>In a level, <code>Puzzle Hint Supply</code> on the Hint button puts a
+badge with the stock on it (a plus at zero). With none left, a tap opens
+the offer instead, saying when the next free one comes back.
+<code>PuzzleMeta.Clock</code> is the time source for the refill, so a
+game that does not trust the device clock can plug in its server's.</p>
+<p><strong>Boosters.</strong> Each <code>Puzzle Booster</code> now says
+what it does (<code>Effect</code>) and how strongly
+(<code>Power</code>), so the five in the demo work with no code:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Booster</th>
+<th>When</th>
+<th>Effect</th>
+<th>Power</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Magnet</td>
+<td>in level</td>
+<td><code>PlacePieces</code>: flies pieces from the tray straight into
+place</td>
+<td>3 pieces</td>
+</tr>
+<tr>
+<td>Frame</td>
+<td>in level</td>
+<td><code>DealEdges</code>: deals the edge pieces into the tray
+next</td>
+<td></td>
+</tr>
+<tr>
+<td>Stopwatch</td>
+<td>in level</td>
+<td><code>StopClock</code>: stops the level clock, so the stars
+wait</td>
+<td>30 seconds</td>
+</tr>
+<tr>
+<td>Ready Edge</td>
+<td>level start</td>
+<td><code>BuiltBorder</code>: the border flies into place as the level
+opens</td>
+<td></td>
+</tr>
+<tr>
+<td>Double Coins</td>
+<td>level start</td>
+<td><code>MultiplyReward</code>: multiplies the level's coin reward</td>
+<td>x2</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>Custom</code> does nothing itself: listen to
+<code>PuzzleMetaEvents.BoosterUsed</code> and do your own thing. A
+booster that would do nothing right now, such as a magnet on a board
+with no pieces left, is not taken.</p>
+<ul>
+<li><strong><code>Puzzle Booster Bar</code></strong> holds the in-level
+boosters, one <code>Puzzle Booster Slot</code> each: icon, count badge,
+padlock until it opens. It sits halfway between two buttons you name per
+screen shape (reroll and hint along the bottom of a tall screen, preview
+and reroll down the side of a wide one), spaced evenly and shrunk if the
+gap is tight. The stopwatch slot counts its seconds down while the clock
+is stopped.</li>
+<li><strong><code>Puzzle Level Start Popup</code></strong> opens when
+the player picks a level: number, name, picture, best stars and time,
+the level start boosters to tick, and Play. It takes over through
+<code>PuzzleLevelSelectionUI.InterceptStart</code>, so the map and cards
+are unchanged, and without the meta levels start straight away.</li>
+<li><strong><code>Puzzle Purchase Popup</code></strong> is the mini shop
+for all of it: at zero, a booster or hint is offered for coins on the
+spot, without leaving the level. The level clock stops while it is
+open.</li>
+<li><strong><code>Puzzle Tutorial Pointer</code></strong> is a tapping
+finger with a speech bubble. The first time each booster is open and on
+screen, it points at it with the booster's description, one booster at a
+time. It never blocks input; tapping the booster closes it.</li>
+<li>Boosters open as the player progresses, through the same feature
+list as the tabs (<code>booster.magnet</code> and so on): by default
+Magnet at level 2, Frame 3, Stopwatch 4, Ready Edge 5 and Double Coins
+6. Every player starts with two of each.</li>
+</ul>
+<p>From code: <code>PuzzleMeta.Instance.UseBooster(booster)</code>,
+<code>ArmForLevel(level, boosters)</code>, <code>TrySpendHint()</code>,
+<code>BuyHintRefill()</code> and
+<code>SecondsToNextRefill(currency)</code>.</p>
+<p>Hooks added to the puzzle for this, each usable on its own:
+<code>PuzzleBoard.CanShowHint</code>, <code>PlacePieces</code>,
+<code>UnplacedPieces</code>, <code>IsEdge</code> and the static
+<code>Built</code> event; <code>PuzzlePieceTray.Release</code> and
+<code>Prioritise</code>; <code>PuzzlePieceDragger.FlyHome</code>;
+<code>PuzzleSession.ClockPaused</code>;
+<code>PuzzleAudio.PlayClip</code>.</p>
+<h3 id="shop">Shop</h3>
+<p>The Shop tab sells from <code>Data/Meta/Shop Catalog</code> (assigned
+to the meta config's <code>Shop</code>). Each
+<code>Puzzle Shop Item</code> names its section, what it gives
+(currencies and boosters, any mix), and how it is paid for: a store
+<code>Sku</code> for real money, a currency and price, or nothing for a
+free gift. Optional: a badge (Best value), a crossed-out old price, a
+purchase limit, an offer that ends some hours after the player first
+sees it, and a cooldown for gifts.</p>
+<p>The demo catalog: a one-time Starter Pack (48 hours, -80%), two
+bundles, three gem packs, three coin packs bought with gems, and a free
+50 coins every 4 hours.</p>
+<ul>
+<li><strong><code>Puzzle Shop Screen</code></strong> lays the catalog
+out in sections under ribbon headings, the special offer full width and
+the rest in rows that refit when the screen turns. On a wide screen two
+sections stand side by side whenever they fit
+(<code>Section Gap</code>), so the landscape shop fills the screen
+instead of running down a narrow column.</li>
+<li><strong><code>Puzzle Shop Card</code></strong> shows one item:
+picture, amount, price button (with the currency's icon when it costs
+coins or gems), badge, old price, time left on a small pill with a clock
+(<code>Timer Badge</code>), sold out. A special offer lists everything
+it gives, each with its icon and amount (<code>Contents Row</code>,
+<code>Content Template</code>), shrinking as one piece if the line is
+longer than the card.</li>
+<li><strong><code>Puzzle Reward Popup</code></strong> shows what was
+bought, spacing the entries so long amounts such as "x1 000" never touch
+and shrinking a long row to fit the window; on Claim the coins and gems
+fly into their top HUD plaques (<code>Puzzle Coin Flight</code>, usable
+for any reward).</li>
+</ul>
+<p>Real money goes through <code>IPuzzlePurchaseProvider</code>,
+assigned to <code>PuzzleMeta.Purchases</code>. Out of the box it is
+<code>PuzzleDemoPurchaseProvider</code>, which hands everything out
+without charging, and the shop says so on screen. Plug in Unity IAP or
+any store by implementing three members:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">class</span> MyStore <span class="op">:</span> IPuzzlePurchaseProvider</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="dt">bool</span> IsDemo <span class="op">=&gt;</span> <span class="kw">false</span><span class="op">;</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="dt">string</span> <span class="fu">GetPrice</span><span class="op">(</span><span class="dt">string</span> sku<span class="op">)</span> <span class="op">=&gt;</span> <span class="co">/* the store&#39;s localised price */</span><span class="op">;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="dt">void</span> <span class="fu">Purchase</span><span class="op">(</span><span class="dt">string</span> sku<span class="op">,</span> Action<span class="op">&lt;</span><span class="dt">bool</span><span class="op">&gt;</span> done<span class="op">)</span> <span class="op">=&gt;</span> <span class="co">/* call done(true) once paid */</span><span class="op">;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>PuzzleMeta<span class="op">.</span><span class="fu">Purchases</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">MyStore</span><span class="op">();</span></span></code></pre></div>
+<p>Free gifts can be put behind a rewarded ad the same way: set
+<code>PuzzleMeta.Ads</code> to your <code>IPuzzleAdsProvider</code>.
+Without one, a gift is simply claimed when its timer allows. From code:
+<code>PuzzleMeta.Instance.Buy(item, done)</code>,
+<code>ClaimGift</code>, <code>StateOf</code>, <code>PriceLabel</code>,
+and <code>PuzzleMetaEvents.ItemPurchased</code> for analytics.</p>
+<h3 id="profile-and-settings">Profile and settings</h3>
+<p>The Profile tab shows the player's avatar in its frame, their name
+(tap to edit, up to 16 characters), and four totals read from the saves:
+levels solved, stars, fastest solve and days in a row (counted each day
+the game is opened, back to 1 after a missed day). On a tall screen the
+card is only as high as its column (<code>Tall Card Height</code>) and
+sits centred; on a wide one avatar and totals stand side by side.</p>
+<ul>
+<li><strong><code>Data/Meta/Avatar Set</code></strong> (assigned to the
+meta config's <code>Avatars</code>) holds the avatars, all free, and the
+frames: blue and green free, gold for 50 gems and purple for 100. The
+demo avatars are twelve chip characters, each with its own colour and
+accessory.</li>
+<li><strong><code>Puzzle Avatar Picker</code></strong> chooses among
+them; a locked frame shows its price and buying it wears it. The picker
+scales itself down to fit a short landscape screen, ribbon and close
+button included (<code>Overhang</code>, <code>Side Overhang</code>), and
+refits when the screen turns.
+<strong><code>Puzzle Avatar View</code></strong> shows the current
+avatar and frame anywhere, the top HUD's avatar included, and follows
+every change.</li>
+<li><strong><code>Puzzle Settings Window</code></strong> opens from the
+HUD's gear: sound, music and vibration switches
+(<code>Puzzle Switch</code>) and a quiet Reset progress link, which asks
+first in a <strong><code>Puzzle Confirm Popup</code></strong> with a red
+button. A language row is in the prefab but switched off
+(<code>LanguageRow</code>) until the game has more than one language.
+The reset wipes every level and the whole meta
+(<code>PuzzleMeta.Instance.ResetEverything()</code>).</li>
+</ul>
+<p>Settings are saved with the meta. Sound drives
+<code>Puzzle Audio</code>'s mute; music is a flag for your music player
+to read (<code>PuzzleMeta.Instance.Profile.musicOn</code>), and
+<code>PuzzleMeta.Vibrate()</code> buzzes a phone only when vibration is
+on.</p>
+<h3 id="leaderboard">Leaderboard</h3>
+<p>The Ranks tab (open from level 5) has three boards:
+<strong>Stars</strong> (most stars), <strong>Level time</strong>
+(fastest solve of the level being played, or the furthest one solved)
+and <strong>Level</strong> (furthest level reached). Each row shows the
+place, with gold, silver and bronze medals for the top three, the avatar
+in its frame, the name and the score. The player's own row is
+highlighted, and pinned to the bottom of the list while it is scrolled
+out of sight; the list then ends above the pinned row
+(<code>Pinned Gap</code>) instead of running under it. On a wide screen
+the board keeps to a readable width (<code>Puzzle Max Width</code> on
+its <code>Column</code>).</p>
+<p>Out of the box the boards are filled by
+<code>PuzzleBotLeaderboard</code>: fifty bots with ready-made names and
+scores spread round the player's own, densest near it, so there is
+always someone just ahead to beat. The field is the same all week and
+changes with the next, so the list does not reshuffle each time the tab
+opens.</p>
+<p>For real players, implement one method over your backend and assign
+it:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">class</span> MyBoards <span class="op">:</span> IPuzzleLeaderboardProvider</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">public</span> <span class="dt">void</span> <span class="fu">Fetch</span><span class="op">(</span>PuzzleLeaderboardBoard board<span class="op">,</span> PuzzleLevel level<span class="op">,</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                      PuzzleLeaderboardEntry player<span class="op">,</span> Action<span class="op">&lt;</span>List<span class="op">&lt;</span>PuzzleLeaderboardEntry<span class="op">&gt;&gt;</span> done<span class="op">)</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>        <span class="co">// Submit player.score, download the top, put the player at their place, then:</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        <span class="fu">done</span><span class="op">(</span>entries<span class="op">);</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>PuzzleMeta<span class="op">.</span><span class="fu">Leaderboards</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">MyBoards</span><span class="op">();</span></span></code></pre></div>
+<p><code>Puzzle Leaderboard Screen</code> and
+<code>Puzzle Leaderboard Row</code> draw whatever the provider returns.
+<code>PuzzleMeta.Instance.PlayerEntry(board, level)</code> gives the
+player's own score for any board.</p>
+<h3 id="friends">Friends</h3>
+<p>The Friends tab (open from level 6 in the demo) lists the player's
+friends, furthest first: avatar in its frame, name, level reached, and a
+<strong>Send</strong> button for a free daily gift. Gifts friends sent
+today wait in a block at the top with <strong>Claim all</strong>, which
+pays 50 coins each (the meta config's <code>Gift Currency</code> and
+<code>Gift Amount</code>) and sends them flying into the coin plaque.
+<strong>Invite friends</strong> shares the config's
+<code>Invite Message</code>. With no friends at all the tab shows an
+empty state with an Invite button instead. On a wide screen the list
+keeps to a readable width (<code>Puzzle Max Width</code> on
+<code>ListArea</code>).</p>
+<p><strong><code>Puzzle Max Width</code></strong> is a small layout
+helper you can put on any stretched panel: it fills the width on a phone
+and stops at <code>Max Width</code>, centred, on a wider screen.</p>
+<p>Out of the box <code>PuzzleBotFriends</code> gives the player eight
+bot friends at levels round their own, a few of whom send a gift each
+day, and invites are copied to the clipboard
+(<code>PuzzleClipboardShare</code>). Plug in the real thing through two
+interfaces:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>PuzzleMeta<span class="op">.</span><span class="fu">Friends</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">MyFriends</span><span class="op">();</span>   <span class="co">// IPuzzleFriendsProvider: GetFriends, GetGiftsSent, SendGift</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>PuzzleMeta<span class="op">.</span><span class="fu">Share</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">MyShareSheet</span><span class="op">();</span>  <span class="co">// IPuzzleShareProvider: Share(message, done)</span></span></code></pre></div>
+<p>Sending and claiming are tracked per friend per day in the meta save,
+so a gift can be sent once a day to each friend and each friend's gift
+claimed once.</p>
+<h3 id="daily-reward-and-chapter-chests">Daily reward and chapter
+chests</h3>
+<p><strong>Daily reward.</strong> A seven-day calendar opens by itself
+on the first visit of the day (<code>Puzzle Daily Reward Popup</code>):
+today's day pulses, days already claimed carry a tick, and Claim pays
+the day and flies it into the plaques. Claiming every day walks through
+the week; a missed day, or the end of the week, starts again at day 1.
+Rows of the calendar are centred, and a day marked <code>Big</code>
+takes two cells so the week ends on its best reward. Each day's icon
+grows with its card. Opened over a level, the calendar stops the level
+clock until it closes. The demo week: 50 and 75 coins, 2 hints, 100
+coins, a magnet, 5 gems, and a big seventh day of 300 coins, 10 gems and
+two boosters. Set the days in the reward table's
+<code>Daily Rewards</code>.</p>
+<p><strong>Chapter chests.</strong> Every chapter banner on the map
+carries a chest with the chapter's stars, such as 5/9
+(<code>Puzzle Chapter Chests</code>, on the level map). Once every star
+of the chapter is earned the chest wiggles; a tap opens it for 100 coins
+and a random booster (<code>Chest Contents</code>,
+<code>Chest Boosters</code>) with a little hop. A tap on a chest that is
+not full yet shakes it; an opened chest stays open and ignores taps.
+<code>Levels Per Chapter</code> in the reward table must match the map's
+zone sizes, 3 in the demo. The map raises
+<code>BannerShown(banner, index)</code> for anything else you want to
+hang on a banner.</p>
+<p>From code: <code>PuzzleMeta.Instance.DailyDayToClaim()</code>,
+<code>ClaimDaily()</code>,
+<code>ChapterStars(chapter, out earned, out total)</code>,
+<code>ChestReady(chapter)</code> and
+<code>OpenChest(chapter)</code>.</p>
+<p>Any <code>Puzzle Currency Plaque</code> can show a reward arriving:
+<code>Hold(amount)</code> keeps that much of the balance off the
+display, <code>Release(amount)</code> lets part of it in with a roll and
+a bounce, and <code>ReleaseAll()</code> lets in the rest.</p>
+<p>The package ships EditMode tests for all of this in
+<code>Tests/</code>. They compile only in a project that has Unity's
+Test Framework package, so they cost nothing elsewhere.</p>
 <h2 id="saving">Saving</h2>
 <p>Progress is stored per level and includes where every loose piece is
 lying, so a player can quit halfway through and come back to the same
@@ -125,13 +560,89 @@ board.</p>
 <p>By default it goes to <code>PlayerPrefs</code>. To route it into your
 own save system, implement <code>IPuzzleSaveStore</code> and assign it
 <strong>before the first level starts</strong>:</p>
-<div class="sourceCode" id="cb7"><pre
-class="sourceCode csharp"><code class="sourceCode cs"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>PuzzleManager<span class="op">.</span><span class="fu">SaveStore</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">MyCloudSaveStore</span><span class="op">();</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode csharp"><code class="sourceCode cs"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>PuzzleManager<span class="op">.</span><span class="fu">SaveStore</span> <span class="op">=</span> <span class="kw">new</span> <span class="fu">MyCloudSaveStore</span><span class="op">();</span></span></code></pre></div>
 <p>Saves are keyed by the level's generated id, not its file name, so
 renaming a level asset does not lose progress.</p>
 <hr />
 <h2 id="customising">Customising</h2>
 <p>Everything below is on the inspector; none of it needs code.</p>
+<h3 id="piece-tray-puzzle-piece-tray">Piece tray
+(<code>Puzzle Piece Tray</code>)</h3>
+<p>By default the loose pieces wait in a tray: a few at a time on a
+shelf under the board on a tall screen and beside it on a wide one, the
+rest queued out of sight. The board comes first: it keeps the full width
+of a tall screen and the full height of a wide one, and the tray grows
+its slots as large as what is left allows, in one row or two, every
+piece is in reach of a thumb, and a 100 piece level is no messier than a
+9 piece one. Drop a piece near its place and it goes in; drop it
+anywhere else and it slides back to its slot. Each placed piece is
+replaced from the queue. What the tray shows and the order of its queue
+are saved with the level.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Slot Count</code></td>
+<td>How many pieces are on show at once.</td>
+</tr>
+<tr>
+<td><code>Max Slot Size</code></td>
+<td>Largest a slot may grow. Slots go into two rows when that makes them
+larger without shrinking the board.</td>
+</tr>
+<tr>
+<td><code>Piece Fill</code> / <code>Spacing</code></td>
+<td>How much of a slot the picture part of a piece fills (its tabs reach
+a little further), and the gap between slots. Pieces are shown this
+large however small they are on the board, so even a 100 piece level is
+easy to read, and shrink to their board size when picked up.</td>
+</tr>
+<tr>
+<td><code>Piece Shadow</code></td>
+<td>Soft shadow under the pieces on the shelf. Alpha 0 turns it
+off.</td>
+</tr>
+<tr>
+<td><code>Hud Top</code>, <code>Edge Margin</code>,
+<code>Tall Bottom</code>, <code>Wide Right</code>,
+<code>Board Gap</code></td>
+<td>Room kept clear for the HUD and the corner buttons, and the gap
+between tray and board.</td>
+</tr>
+<tr>
+<td><code>Order</code></td>
+<td><code>Smart</code> favours edges and pieces that fit next to what is
+already placed, with some chance mixed in. <code>Random</code> is a
+plain shuffle.</td>
+</tr>
+<tr>
+<td><code>Look Ahead</code></td>
+<td>Smart order: how many waiting pieces it picks among. Lower is more
+predictable.</td>
+</tr>
+<tr>
+<td><code>Reroll Button</code></td>
+<td>Swaps the pieces on show for others. Placed in the row of corner
+buttons (bottom left when upright, above the hint button when sideways)
+so it never takes a slot's room. Set <code>CanReroll</code> from code to
+charge for it.</td>
+</tr>
+</tbody>
+</table></div>
+<p>From code: <code>PuzzleBoard.RerollTray()</code>,
+<code>PuzzleBoard.PieceTray</code>, and on the tray
+<code>Remaining</code>, <code>Showing</code>, <code>CanReroll</code> and
+the <code>Rerolled</code> event.</p>
+<p><strong>Prefer the classic way?</strong> Set
+<code>Piece Layout</code> on <code>Puzzle Board</code> to
+<code>Scatter</code> and the pieces are spread around the board as
+before, joining each other wherever they meet.</p>
 <h3 id="board-puzzle-board">Board (<code>Puzzle Board</code>)</h3>
 <div class="table-scroll"><table>
 <thead>
@@ -141,6 +652,11 @@ renaming a level asset does not lose progress.</p>
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><code>Piece Layout</code></td>
+<td><code>Tray</code> (default) or <code>Scatter</code>, see above.
+<code>Piece Tray</code> points at the tray.</td>
+</tr>
 <tr>
 <td><code>Piece Resolution</code></td>
 <td>Pixel size of one piece. Raise for sharper pieces on large
@@ -216,32 +732,255 @@ frame.</td>
 <td>Extra inset keeping a dragged piece off the screen edge. Pieces are
 kept on screen either way.</td>
 </tr>
+<tr>
+<td><code>Lift Above Finger</code></td>
+<td><code>Touch Only</code> (default) floats a dragged piece above the
+finger on touch screens so the finger does not hide it;
+<code>Always</code> does the same for the mouse, <code>Off</code> keeps
+the piece exactly under the pointer. The piece is dropped where it is
+drawn.</td>
+</tr>
+<tr>
+<td><code>Lift Distance</code></td>
+<td>How far above the touch point the centre of the piece floats, in
+millimetres on the screen (14 by default), so it feels the same on every
+phone. A piece grabbed by its lower edge only rises by what is
+missing.</td>
+</tr>
+<tr>
+<td><code>Lift Duration</code></td>
+<td>Seconds the piece takes to rise.</td>
+</tr>
 </tbody>
 </table></div>
+<h3 id="streak-praise-puzzle-combo-praise-over-the-board">Streak praise
+(<code>Puzzle Combo Praise</code>, over the board)</h3>
+<p>Pieces dropped straight into their slots one after another build a
+streak, and the game cheers it on: <strong>Good!</strong> at 2,
+<strong>Great!</strong> at 3, <strong>Awesome!</strong> at 5,
+<strong>Amazing!</strong> at 7, <strong>Incredible!</strong> at 10, then
+<strong>Unstoppable!</strong> every 3 more. The word pops over the board
+with a burst of sparks and a chime. A drop anywhere else, or a pause
+longer than <code>Streak Window</code> (10 seconds), starts the count
+again; the piece that finishes the level is left to the win screen.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Tiers</code></td>
+<td>The ladder: streak, word and colour of each step. Add, remove or
+rename freely.</td>
+</tr>
+<tr>
+<td><code>Endless Text</code> / <code>Repeat Every</code></td>
+<td>What shows past the last tier, and how often.</td>
+</tr>
+<tr>
+<td><code>Streak Window</code></td>
+<td>Seconds allowed between placements. 0 never times out.</td>
+</tr>
+<tr>
+<td><code>Anchor To</code></td>
+<td>The word pops over the centre of this; the demo uses the board's
+piece container.</td>
+</tr>
+<tr>
+<td><code>Spark Sprite</code>, <code>Spark Count</code>,
+<code>Spark Size</code>, <code>Sound</code></td>
+<td>The burst and the chime. Clear them for a quieter praise.</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>PuzzleComboPraise.Praised(streak, word)</code> is raised each
+time, for example to pay a coin per praise, and
+<code>PuzzlePieceDragger.Landed(piece, solved)</code> reports every drop
+if you want your own streak rules. <code>Show(word, colour)</code> pops
+a word on demand.</p>
 <h3 id="sound">Sound</h3>
 <p><code>Puzzle Audio</code> sits on the Puzzle Manager object and plays
 five one-shots: picking a piece up, dropping one into place, two pieces
 clicking together, solving a level and tapping a button. Swap any clip
 for your own, or clear one to silence that event alone. Delete the
-component and the minigame runs silently.</p>
+component and the game runs silently.</p>
 <p><code>Volume</code> and <code>Muted</code> are public, so a settings
 screen can drive them directly. Every clip goes through one
 <code>AudioSource</code>, so pointing that source at your own mixer
-group routes the whole minigame.</p>
+group routes the whole game.</p>
 <p>The bundled effects in <code>Audio/</code> were synthesised for this
 package. They are yours to keep, edit or replace.</p>
+<h3 id="level-map-puzzle-level-map">Level map
+(<code>Puzzle Level Map</code>)</h3>
+<p>The demo's level select screen is a map: a winding road with one
+round node per level, the picture inside the node, its number on a
+badge, stars above it and a lock until it opens. The road is coloured up
+to the level the player is on, which also wears a pulsing ring, and the
+map scrolls there by itself whenever the player comes back from a
+level.</p>
+<p>Nothing on the map is placed by hand. The road, the nodes and the
+backdrops are worked out from the level count, so adding a level to the
+library puts it on the map. Only the nodes on screen exist; they are
+recycled as the map scrolls, so a thousand levels cost the same as
+ten.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Direction</code></td>
+<td><code>Auto</code> climbs upwards on a tall screen and runs sideways
+on a wide one, and changes over when the device turns.
+<code>Upwards</code> and <code>Sideways</code> fix it.</td>
+</tr>
+<tr>
+<td><code>Node Spacing</code></td>
+<td>Distance between two levels along the road.</td>
+</tr>
+<tr>
+<td><code>Swing</code> / <code>Max Swing</code></td>
+<td>How far the road bends to either side, as a share of the map and as
+a cap in canvas units.</td>
+</tr>
+<tr>
+<td><code>Levels Per Wave</code></td>
+<td>How many levels one full bend of the road takes.</td>
+</tr>
+<tr>
+<td><code>Start Padding</code> / <code>End Padding</code></td>
+<td>Empty map before level 1 and after the last level.</td>
+</tr>
+<tr>
+<td><code>Header Space</code></td>
+<td>Strip kept clear for the title on a sideways map.</td>
+</tr>
+<tr>
+<td><code>Focus Point</code></td>
+<td>Where the current level settles on screen, from the start of the
+road (0) to the end (1).</td>
+</tr>
+<tr>
+<td><code>Zones</code></td>
+<td>Stretches of the map with their own tint, backdrop picture and
+banner title, each holding a set number of levels. They repeat once the
+levels outnumber them, so three zones serve a map of any length.</td>
+</tr>
+<tr>
+<td><code>Zone Blend</code></td>
+<td>How far neighbouring zones overlap, so they fade into each other
+instead of meeting at a line.</td>
+</tr>
+</tbody>
+</table></div>
+<p>The pieces it uses are all in the prefab and all optional:</p>
+<ul>
+<li><p><strong>Node Prefab</strong>
+(<code>Prefabs/PuzzleLevelNode</code>) is a
+<code>Puzzle Level Button</code>, the same component the cards use, with
+a <code>Number Text</code> for the badge. Restyle it freely. Its
+<strong>State Looks</strong> swap the ring (<code>Frame Image</code>)
+and the number badge (<code>Badge Image</code>) by state: locked, open,
+current (the level the player is up to) and solved, each with its own
+number outline colour. The bundled looks are green for solved, blue for
+open, gold for current and cream with a gold padlock for locked. Leave a
+sprite empty to keep whatever the image already shows.</p></li>
+<li><p><strong>Path</strong> is a <code>Puzzle Map Path</code>, a mesh
+with no art behind it: road width, edge, dashes and the colours of the
+road ahead and behind. With <code>Follow Theme</code> on it takes those
+colours from the active theme.</p></li>
+<li><p><strong>Current Marker</strong> is any image; it is moved onto
+the current level and pulses. The bundled one is a soft gold glow behind
+the node.</p></li>
+<li><p><strong>Zone Template</strong> is a
+<code>Puzzle Fade Graphic</code>, a rectangle that fades out at its
+ends. A <code>Text</code> inside it becomes the zone's banner. With
+<code>Repeat Picture</code> on, a zone's backdrop keeps its proportions
+and repeats along the road instead of stretching. With
+<code>Mirror Copies</code> on (the default) every other copy is
+mirrored, so the joins match even on art that was not made to tile; keep
+anything distinctive away from the picture's edges, or it meets its own
+reflection. Turn it off for a picture that tiles by itself and has an up
+and a down, such as trees drawn from the side, or every other copy
+stands upside down.</p></li>
+<li><p>The demo's chapters share one backdrop,
+<code>Art/UI/bg_chapter_meadow.png</code>: sunny candy grass with clover
+and tiny flowers and nothing tall on it, so the road can wind anywhere.
+It tiles seamlessly, so the template repeats it without mirroring. Each
+chapter tints it slightly (<code>Color</code> on the zone). The zones
+reach past the map (<code>Overscan</code> past its ends,
+<code>Side Overscan</code> past its sides) and the viewport's
+<code>RectMask2D</code> padding is widened to match, so the meadow fills
+the screen up under the top HUD and down under the tab bar.</p></li>
+<li><p><strong>Map Scenery</strong> (<code>Puzzle Map Scenery</code>,
+next to the map) stands trees, bushes, flowers, rocks, a cottage, a
+pond, a well and the rest around the road, never on it and never under a
+node or a chapter banner. The map is split into a grid
+(<code>Cell Size</code>) and every cell decides what stands in it from
+its own coordinates, so the same map always looks the same, a long map
+costs nothing up front and only the cells near the screen are built.
+Each object in <code>Items</code> belongs to a band beside the road:
+<code>Grove</code> far from it, where the trees gather,
+<code>Clearing</code> in the open meadow, and <code>Roadside</code>
+right by the road for small things. <code>Landmark</code> keeps the
+neighbouring cells empty, for a house or a pond that should stand on its
+own; <code>Sway</code> rocks it gently in the wind; <code>Flip</code>
+lets it show mirrored for variety. <code>Density</code>, the band
+distances, the room kept around the road and the nodes, and
+<code>Seed</code> shape the whole layout. Objects lower on the screen
+stand in front, each with a soft contact shadow. The layout follows the
+road in both orientations and is rebuilt when the screen turns.
+<strong>Sunlight</strong> comes through the leaves: some grove trees
+(<code>Ray Chance</code>) let a ray of sun slant down from under their
+leaves onto the grass, where it lights a warm patch. Every ray leans the
+same way (<code>Sun Angle</code>), as from one sun, slowly brightens and
+dims (<code>Ray Pulse</code>), and belongs to the world, so it scrolls
+with the map. The demo scenery (<code>Art/Map</code>) was generated with
+Recraft and cut into sprites; swap in your own pictures in
+<code>Items</code>.</p></li>
+<li><p><strong>Map Ambience</strong> (<code>Puzzle Map Ambience</code>,
+next to the map) keeps the meadow alive: a warm glow can tint the corner
+of the screen the sun comes from, and a fan of rays can fall from it
+(<code>Sunlight</code>; the demo keeps only a faint glow and lets the
+scenery's rays carry the light, since rays fixed to the screen look odd
+as the map scrolls under them), faint cloud shadows drift across the
+grass, butterflies wander over the map and sparkles wink on and off. The
+sunlight belongs to the screen and stays put while the map scrolls;
+everything else moves with the map and is only kept around the part on
+screen, so a long map costs the same few images. Counts, sizes, speeds,
+colours and the sparkle rate are on the component; leave a sprite empty
+to switch that effect off. Shadows and sparkles stay under the road and
+the nodes, butterflies fly above them, and none of them catch
+taps.</p></li>
+</ul>
+<p>From code, <code>FocusLevel(index, animate)</code> scrolls to any
+level and <code>CurrentIndex</code> says which one the player is up
+to.</p>
+<p><strong>Prefer the card list?</strong> Clear <code>Level Map</code>
+on <code>Puzzle Level Selection UI</code>, switch off the
+<code>LevelMap</code> object and switch on <code>Scroll View</code>. The
+cards come back exactly as before, with everything under Screen shape
+below.</p>
 <h3 id="screen-shape">Screen shape</h3>
 <p>The layout follows the canvas rather than a fixed size, so the same
 prefab works in landscape and portrait:</p>
 <ul>
-<li>The level list is a scrolling row on a wide screen and a scrolling
-grid on a tall one. <code>Puzzle Responsive Level List</code> on the
-Scroll View holds the row height and the column count. On a tall screen
-the grid fills the space from under its <code>Header</code> (the title)
-down to <code>Bottom Margin</code>, and
-<code>Fit Columns To Width</code> stretches the cards so the columns
-span the whole list. Clear <code>Header</code> to size the grid as a
-share of the screen instead.</li>
+<li>The level map runs sideways on a wide screen and upwards on a tall
+one (see Level map above). If you use the card list instead, it is a
+scrolling row on a wide screen and a scrolling grid on a tall one.
+<code>Puzzle Responsive Level List</code> on the Scroll View holds the
+row height and the column count. On a tall screen the grid fills the
+space from under its <code>Header</code> (the title) down to
+<code>Bottom Margin</code>, and <code>Fit Columns To Width</code>
+stretches the cards so the columns span the whole list. Clear
+<code>Header</code> to size the grid as a share of the screen
+instead.</li>
 <li><code>Puzzle Responsive HUD</code> on the top bar moves the timer
 and the piece counter to a second row when they would touch the Back or
 Preview button, which happens on tall phones held upright. Where they
@@ -260,18 +999,133 @@ grid may be blown up to fill the screen. A 3×3 picture is only 300 units
 wide, which would leave half a phone screen empty at <code>1</code>.
 Raise <code>Piece Resolution</code> if the result looks soft.</li>
 </ul>
+<h3 id="texts-and-wording">Texts and wording</h3>
+<p>The interface is in English and has no localisation system yet. Every
+word the player reads can still be changed without code, in one of two
+places:</p>
+<ul>
+<li><strong>Fixed labels</strong> (window titles, button captions, tab
+names, headings) are <code>Text</code> components in the
+<code>JigsawPuzzle</code> prefab. Edit them there.</li>
+<li><strong>Labels the code fills in</strong> are fields on the
+component that writes them, each with a tooltip, and <code>{0}</code>
+marks where a number or name goes:</li>
+</ul>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Puzzle HUD</code></td>
+<td>Preview and Hide on the preview button</td>
+</tr>
+<tr>
+<td><code>Puzzle Combo Praise</code></td>
+<td>Every praise word and its colour, and the endless word</td>
+</tr>
+<tr>
+<td><code>Puzzle Shop Screen</code></td>
+<td>Section headings, title of the window after a purchase</td>
+</tr>
+<tr>
+<td><code>Shop Catalog</code> (asset)</td>
+<td>Item names, badges, old prices, the Free label</td>
+</tr>
+<tr>
+<td><code>Puzzle Daily Reward Popup</code></td>
+<td>Day label, title of the reward window</td>
+</tr>
+<tr>
+<td><code>Puzzle Chapter Chests</code></td>
+<td>Title of the reward window</td>
+</tr>
+<tr>
+<td><code>Puzzle Leaderboard Screen</code></td>
+<td>The line under each board, the level score format</td>
+</tr>
+<tr>
+<td><code>Puzzle Friends Screen</code> /
+<code>Puzzle Friend Row</code></td>
+<td>Gifts title, invite toast, Send and Sent</td>
+</tr>
+<tr>
+<td><code>Puzzle Hint Supply</code></td>
+<td>Offer title and the refill lines</td>
+</tr>
+<tr>
+<td><code>Puzzle Settings Window</code></td>
+<td>The reset question, its warning and button, language name</td>
+</tr>
+<tr>
+<td><code>Puzzle Switch</code></td>
+<td>ON and OFF</td>
+</tr>
+<tr>
+<td><code>Meta Config</code> (asset)</td>
+<td>The invite message</td>
+</tr>
+<tr>
+<td><code>Puzzle Level</code> (asset)</td>
+<td>Each level's display name</td>
+</tr>
+<tr>
+<td><code>Puzzle Booster</code>, <code>Puzzle Currency</code>
+(assets)</td>
+<td>Display names, and each booster's description</td>
+</tr>
+</tbody>
+</table></div>
 <h3 id="look">Look</h3>
-<p>The level card, the piece and the whole minigame are ordinary prefabs
-under <code>Prefabs/</code>. Restyle them however you like: the scripts
-only need the components they are wired to, and every UI reference is
-optional.</p>
+<p>The level card, the map node, the piece and the whole game are
+ordinary prefabs under <code>Prefabs/</code>. Restyle them however you
+like: the scripts only need the components they are wired to, and every
+UI reference is optional.</p>
 <p>The backdrop is a single sprite on <code>Content/bg</code>
-(<code>Art/Background.png</code>). Swap the sprite, or drop your own
-game's scene behind the canvas and set the image's alpha to zero.</p>
+(<code>Art/UI/bg_navy.png</code>, kept under its old name: a berry
+violet gradient with sunlight from the top, a faint jigsaw pattern and
+soft bokeh; the level has a calmer one, <code>bg_board.png</code>). Swap
+the sprite, or drop your own game's scene behind the canvas and set the
+image's alpha to zero. <code>bg_slate</code> is there for plainer
+service screens.</p>
+<p>The art follows one recipe throughout, so additions can match it:</p>
+<ul>
+<li>Three planes by lightness: a dark or saturated backdrop, saturated
+containers with cream insets, and the brightest colours and gold
+reserved for what the player acts on.</li>
+<li>Windows and main buttons sit in a thick gold bezel; small buttons
+inside a panel do not.</li>
+<li>Objects (coins, gems, boosters, tab icons) have no thick outline.
+Each part has a fine edge in its own darker tone, light at the upper
+left, a core shadow with reflected light at the lower right, and flat
+parts have real thickness: a solid wall under the face.</li>
+<li>Highlights are a soft spot and one or two crisp points, never a
+white sheet.</li>
+<li>Buttons squash under the finger and spring back on release
+(<code>Puzzle Button Press</code>, on every button in the prefab; add it
+to your own). Small buttons keep a hit area of at least 96 canvas units
+through <code>Raycast Padding</code>, about 48 dp on a phone, and a tap
+anywhere on a currency plaque in the HUD works like its plus.</li>
+<li>Windows pop in from 80% to 105% and settle at full size in 0.3
+seconds (<code>PuzzleWindowAnimation.PopIn</code>), over a deep violet
+dim (<code>#3A2A55</code> at 55%).</li>
+</ul>
+<p>The tab bar's look is set on the <code>Puzzle Tab Bar</code>:
+<code>Active Lift</code>, <code>Active Scale</code> and
+<code>Idle Scale</code> for the icons, <code>Tile Raise</code> for the
+selected tile, <code>Thickness</code> and <code>Edge Margin</code> for
+the bar itself. <code>Bottom Padding</code> keeps the tabs and the label
+off the bottom edge on tall screens, on top of the phone's safe area
+(home indicator); the bar's background still runs to the edge. The
+selected tile never slides past the screen's side.</p>
 <h3 id="themes">Themes</h3>
-<p>The palette lives in one asset. Two ship with the package,
-<code>Midnight</code> and <code>Daylight</code>, under
-<code>Art/Themes/</code>.</p>
+<p>The palette lives in one asset. Three ship with the package under
+<code>Art/Themes/</code>: <code>Candy</code>, which the demo uses and
+which leaves the art's own colours untouched, and <code>Midnight</code>
+and <code>Daylight</code>, which tint it.</p>
 <p>Every element that should follow the palette carries a <strong>Puzzle
 Themed Graphic</strong> naming the part it plays:
 <code>Background</code>, <code>Panel</code>, <code>PanelInset</code>,
@@ -297,15 +1151,67 @@ element whose transparency belongs to the palette instead.</p>
 progress text, which sit on top of the player's own picture rather than
 on a themed surface, and a piece, which is the picture. Leave a theme
 unassigned and nothing is recoloured at all.</p>
+<h3 id="text-outline-puzzle-text-outline">Text outline
+(<code>Puzzle Text Outline</code>)</h3>
+<p>Headings, counters and button captions carry a <strong>Puzzle Text
+Outline</strong> instead of Unity's Outline and Shadow. Unity's Outline
+copies the text four times along the diagonals, so the edge comes out
+thick at the corners and thin on straight strokes, which shows badly on
+round digits. This one spreads its copies round a circle for an even
+edge and draws a solid drop shadow under the outlined text in the same
+pass.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Outline Color</code> / <code>Width</code></td>
+<td>Colour and thickness of the edge. <code>0</code> width draws
+none.</td>
+</tr>
+<tr>
+<td><code>Directions</code></td>
+<td>Copies around the circle. Raise it on very thick outlines.</td>
+</tr>
+<tr>
+<td><code>Shadow Color</code> / <code>Shadow Distance</code></td>
+<td>The lip under the text. <code>0</code> distance draws none.</td>
+</tr>
+<tr>
+<td><code>Face Gradient</code> / <code>Face Top</code> /
+<code>Face Bottom</code></td>
+<td>Paints each letter top to bottom with two colours, cream by default,
+over the text's own colour. The outline and shadow are left alone. From
+code: <code>SetFaceGradient(top, bottom)</code>.</td>
+</tr>
+</tbody>
+</table></div>
+<p>The house style: headings, buttons and numbers in Lilita One with the
+cream face gradient and an outline in the darkest tone of whatever they
+sit on (dark green on a green button, dark berry on the pink ribbon,
+dark blue on blue). Dark navy text with no outline on cream.</p>
+<p>Add it to any <code>Text</code> of your own; it follows the text's
+transparency, so fading a label fades its outline too.</p>
 <h3 id="fonts">Fonts</h3>
-<p>The package ships with <strong>Fredoka SemiBold</strong>, under the
-SIL Open Font License. Its licence text sits next to it in
-<code>Art/Fonts/</code>. Keep the two together if you redistribute the
-font.</p>
+<p>The package ships with two fonts, both under the SIL Open Font
+License, each with its licence text next to it in
+<code>Art/Fonts/</code>. Keep each font with its licence if you
+redistribute it.</p>
+<ul>
+<li><strong>Lilita One</strong>: headings, buttons and numbers. Heavy
+and compact, it reads at a glance.</li>
+<li><strong>Fredoka SemiBold</strong>: running text up to about 36 px,
+such as descriptions and the tutorial bubble.</li>
+</ul>
 <p>To use your own instead: the <strong>Style</strong> tab, drop a font
-in and press apply. Every label across the minigame and the level cards
-switches at once: counters, timer, buttons, win popup. The same tab puts
-Unity's built-in font back if you would rather ship no font at all.</p>
+in and press apply. Every label across the game, the level cards and the
+map nodes switches at once: counters, timer, buttons, win popup. The
+same tab puts Unity's built-in font back if you would rather ship no
+font at all.</p>
 <hr />
 <h2 id="how-the-cutting-works">How the cutting works</h2>
 <ol type="1">
@@ -335,19 +1241,141 @@ unloads.</li>
 drag frame.</li>
 </ul>
 <hr />
+<h2 id="code-map">Code map</h2>
+<p>For programmers who want to go further than the inspector. The code
+is plain C#, one component per file, every public member documented,
+comments that say why rather than what.</p>
+<p><strong>Assemblies.</strong> <code>Corn4Bit.JigsawPuzzle</code> is
+the puzzle itself; <code>Corn4Bit.JigsawPuzzle.Meta</code> (economy and
+its screens) depends on it, never the other way round, so the puzzle
+runs without the meta. <code>Corn4Bit.JigsawPuzzle.Editor</code> holds
+the window, wizard and inspectors.</p>
+<p><strong>The flow of a level.</strong>
+<code>Puzzle Level Selection UI</code> (or your own code) calls
+<code>PuzzleManager.StartPuzzle(level)</code>. The manager opens a
+<code>PuzzleSession</code> (clock, pieces in place) and the
+<code>Puzzle Board</code> cuts the picture into
+<code>Puzzle Piece Dragger</code>s, dealt into the
+<code>Puzzle Piece Tray</code>. Each drop is checked against the piece's
+slot; the last one raises <code>PuzzleManager.OnPuzzleCompleted</code>.
+The completion popup shows the result, and <code>Puzzle Meta</code>,
+listening to the same event, pays the reward and raises
+<code>PuzzleMetaEvents.LevelRewarded</code>.</p>
+<p><strong>Events to listen to</strong>, all static unless noted:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Raised when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PuzzleManager.OnPuzzleStarted</code> /
+<code>OnPuzzleCompleted</code></td>
+<td>A level starts or is solved</td>
+</tr>
+<tr>
+<td><code>PuzzleBoard.Built</code></td>
+<td>A level's pieces are cut and dealt</td>
+</tr>
+<tr>
+<td><code>PuzzlePieceDragger.Landed</code></td>
+<td>A dropped piece lands, in its slot or not</td>
+</tr>
+<tr>
+<td><code>PuzzleComboPraise.Praised</code></td>
+<td>A streak earns a praise word</td>
+</tr>
+<tr>
+<td><code>PuzzleMetaEvents.CurrencyChanged</code> /
+<code>BoosterChanged</code></td>
+<td>Coins, gems or a booster count change</td>
+</tr>
+<tr>
+<td><code>PuzzleMetaEvents.LevelCompleted</code> /
+<code>LevelRewarded</code></td>
+<td>Stars are recorded / the reward is paid</td>
+</tr>
+<tr>
+<td><code>PuzzleMetaEvents.BoosterUsed</code> /
+<code>ItemPurchased</code></td>
+<td>A booster is used / a shop item is bought</td>
+</tr>
+<tr>
+<td><code>PuzzleMeta.ProfileChanged</code></td>
+<td>Name, avatar, frame or settings change</td>
+</tr>
+<tr>
+<td><code>PuzzleTheme.Changed</code></td>
+<td>The active theme changes</td>
+</tr>
+<tr>
+<td><code>PuzzleLevelMap.LaidOut</code> (instance)</td>
+<td>The map lays itself out again</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Interfaces for your services:</strong></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Interface</th>
+<th>Assign to</th>
+<th>Replaces</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IPuzzleSaveStore</code></td>
+<td><code>PuzzleManager.SaveStore</code></td>
+<td>PlayerPrefs saves</td>
+</tr>
+<tr>
+<td><code>IPuzzlePurchaseProvider</code></td>
+<td><code>PuzzleMeta.Purchases</code></td>
+<td>The demo store</td>
+</tr>
+<tr>
+<td><code>IPuzzleAdsProvider</code></td>
+<td><code>PuzzleMeta.Ads</code></td>
+<td>The demo rewarded ad</td>
+</tr>
+<tr>
+<td><code>IPuzzleLeaderboardProvider</code></td>
+<td>see <a href="#leaderboard">Leaderboard</a></td>
+<td>Weekly bots</td>
+</tr>
+<tr>
+<td><code>IPuzzleFriendsProvider</code> /
+<code>IPuzzleShareProvider</code></td>
+<td>see <a href="#friends">Friends</a></td>
+<td>Bot friends, clipboard</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Animation.</strong> Every tween goes through the package's
+own <code>PuzzleTweens</code> (<code>TweenScale</code>,
+<code>TweenFade</code>, <code>TweenAnchorPos</code>, sequences, delayed
+calls), so your code can use it too without adding DOTween.</p>
+<hr />
 <h2 id="package-layout">Package layout</h2>
 <pre><code>Corn4Bit/JigsawPuzzle/
 ├── Runtime/          Game code (assembly: Corn4Bit.JigsawPuzzle)
 │   ├── Core/         Levels, progress, save system
 │   ├── Generation/   Picture rescaling and piece cutting
-│   ├── UI/           Board, pieces, HUD, level select
+│   ├── UI/           Board, pieces, HUD, level map and level select
 │   ├── Theming/      Theme asset and the tag component
+│   ├── Meta/         Economy, boosters, shop, profile, leaderboard, friends, rewards
+│   │   └── UI/       Their screens and windows (assembly: Corn4Bit.JigsawPuzzle.Meta)
 │   └── Tweening/     Built-in animation system
 ├── Editor/           Level wizard, font tool, inspectors, scene doctor
-├── Prefabs/          The minigame, a level card, a piece
-├── Art/              UI sprites, themes and the bundled font
+├── Prefabs/          The game, a level card, a map node, a piece
+├── Data/Meta/        Currencies, boosters, shop catalog, reward table, avatars, meta config
+├── Art/              UI sprites and atlas, map scenery (Map/), import preset, themes, fonts
 ├── Audio/            Sound effects
 ├── Demo/             Demo scene, levels and images
+├── Tests/            EditMode tests (compile only with the Test Framework package)
 └── Documentation/    This file</code></pre>
 <p>Nothing lives outside this folder, and the package references nothing
 outside it. Every sprite, sound, the font and all code live inside it,
